@@ -188,7 +188,7 @@
   .slot .seed { font-size: 11px; font-weight: 700; color: var(--muted); width: 18px; text-align: right; flex: none; }
   .slot .who { flex: 1; min-width: 0; }
   .slot .tag { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
-  .slot .sub { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+  .slot .sub { font-size: 11px; line-height: 1.3; color: var(--muted); display: block; overflow-wrap: anywhere; }
   .slot .score { font-family: Anton, Impact, sans-serif; font-weight: 400; font-size: 18px; min-width: 22px; text-align: center; color: var(--muted); }
   .slot.empty .tag { color: var(--line-strong); font-weight: 500; font-style: italic; }
   .slot.win { background: var(--win); color: #fff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25); }
@@ -218,7 +218,7 @@
   .vs-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
   .vs-p { border: 1px solid var(--line); border-radius: 8px; padding: 10px 8px; text-align: center; background: var(--surface); min-width: 0; }
   .vs-p .tag { font-weight: 700; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .vs-p .sub { font-size: 11px; color: var(--muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .vs-p .sub { font-size: 11px; line-height: 1.3; color: var(--muted); display: block; overflow-wrap: anywhere; }
   .vs-p.win { background: var(--win); border-color: transparent; color: #fff; box-shadow: 0 0 16px rgba(255, 95, 224, .45); }
   .vs-p.win .sub { color: #ffe1f7; }
   .vs-p.lose { opacity: .55; }
@@ -238,7 +238,8 @@
   .pcard.champion .avatar { background: var(--win); color: #fff; border-color: transparent; box-shadow: 0 0 14px var(--neon); }
   .pcard .info { min-width: 0; flex: 1; }
   .pcard .tag { font-weight: 700; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .pcard .sub { font-size: 12px; color: var(--muted); display: block; }
+  .pcard .sub { font-size: 12px; color: var(--muted); display: block; overflow-wrap: anywhere; }
+  .tag.no-tag { font-style: italic; font-weight: 600; opacity: .75; }
   .pcard .status { font-size: 11px; font-weight: 600; color: var(--muted); margin-top: 2px; display: block; }
   .pcard input { width: 100%; border: 1px solid var(--line-strong); border-radius: 6px; padding: 3px 6px; font-size: 13px; background: var(--surface-2); margin-top: 3px; }
   .pcard input.tag-in { font-weight: 700; }
@@ -608,8 +609,9 @@
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const playerById = id => state.players.find(p => p.id === id);
   // Si no registró GamerTag se muestra su nombre tal como lo escribió.
-  const label = p => p.tag || p.name;
-  const subtitle = p => (p.tag ? p.name : 'Sin GamerTag');
+  const label = p => p.tag || 'Sin GamerTag';
+  const tagClass = p => (p && !p.tag ? 'tag no-tag' : 'tag');
+  const shortName = p => p.tag || p.name; // para campeón y avisos
   const numRounds = () => Math.log2(state.order.length);
 
   function roundName(r) {
@@ -850,11 +852,11 @@
     else if (winner) cls += winner === pid ? ' win' : ' lose';
     if (p && ready) cls += ' pickable';
     const scoreHTML = editing && ready
-      ? `<input class="score-in" type="number" min="0" max="99" inputmode="numeric" value="${esc(score[idx])}" data-score="${r},${m},${idx}" aria-label="Marcador ${esc(p ? label(p) : '')}">`
+      ? `<input class="score-in" type="number" min="0" max="99" inputmode="numeric" value="${esc(score[idx])}" data-score="${r},${m},${idx}" aria-label="Marcador ${esc(p ? shortName(p) : '')}">`
       : `<span class="score">${esc(score[idx])}</span>`;
     return `<div class="${cls}" ${p && ready ? `data-pick="${r},${m},${pid}" role="button" tabindex="${editing ? 0 : -1}"` : ''}>
       <span class="seed">${p ? seedOf(pid) : ''}</span>
-      <span class="who"><span class="tag">${p ? esc(label(p)) : 'Por definir'}</span>${p ? `<span class="sub">${esc(subtitle(p))}</span>` : ''}</span>
+      <span class="who"><span class="${tagClass(p)}">${p ? esc(label(p)) : 'Por definir'}</span>${p ? `<span class="sub">${esc(p.name)}</span>` : ''}</span>
       ${scoreHTML}
     </div>`;
   }
@@ -878,7 +880,7 @@
       <div class="champ" data-match="champ">
         <svg width="40" height="40" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v3h3v2a5 5 0 0 1-5 5h-.3A5 5 0 0 1 13 15.9V18h3v3H8v-3h3v-2.1A5 5 0 0 1 9.3 13H9a5 5 0 0 1-5-5V6h3V3zm10 5v3a3 3 0 0 0 1-2.2V8h-1zM6 8v.8A3 3 0 0 0 7 11V8H6z" fill="${cp ? '#ffd84a' : 'var(--line-strong)'}"/></svg>
         <div class="label">Campeón</div>
-        <div class="name ${cp ? '' : 'tbd'}">${cp ? esc(label(cp)) : '???'}</div>
+        <div class="name ${cp ? '' : 'tbd'}">${cp ? esc(shortName(cp)) : '???'}</div>
         ${cp ? `<div class="sub">${cp.tag ? esc(cp.name) : ''}</div>` : '<div class="sub">Por definir</div>'}
       </div></div></div>`;
     $('#bracket').innerHTML = html;
@@ -921,8 +923,8 @@
       if (!p) cls += ' empty'; else if (w) cls += w === pid ? ' win' : ' lose';
       if (p && ready) cls += ' pickable';
       return `<div class="${cls}" ${p && ready ? `data-pick="${r},${m},${pid}" role="button" tabindex="${editing ? 0 : -1}"` : ''}>
-        <span class="tag">${p ? esc(label(p)) : 'Por definir'}</span>
-        <span class="sub">${p ? esc(subtitle(p)) : feederText(r, m, ps.indexOf(pid))}</span>
+        <span class="${tagClass(p)}">${p ? esc(label(p)) : 'Por definir'}</span>
+        <span class="sub">${p ? esc(p.name) : feederText(r, m, ps.indexOf(pid))}</span>
       </div>`;
     };
     const hasScore = sc[0] !== '' || sc[1] !== '';
@@ -954,7 +956,7 @@
     forEachMatch((r, m) => { if (!winnerOf(r, m) && participants(r, m).every(Boolean)) ready.push([r, m]); });
     const ch = champion(), cp = ch && playerById(ch);
     $('#next-up').innerHTML = cp
-      ? `<h3>¡Tenemos campeón! 🏆 ${esc(label(cp))}</h3>`
+      ? `<h3>¡Tenemos campeón! 🏆 ${esc(shortName(cp))}</h3>`
       : ready.length
         ? `<h3>Siguientes combates</h3><div class="rounds-grid">${ready.slice(0, 3).map(([r, m]) => vsCardHTML(r, m)).join('')}</div>`
         : '';
@@ -993,13 +995,13 @@
     const sorted = state.order.map(playerById).filter(Boolean);
     $('#players-grid').innerHTML = sorted.map(p => {
       const st = playerStatus(p.id);
-      const initials = esc((label(p) || '?').replace(/[^A-Za-z0-9ÁÉÍÓÚÑáéíóúñ]/g, '').slice(0, 2).toUpperCase() || '?');
+      const initials = esc((shortName(p) || '?').replace(/[^A-Za-z0-9ÁÉÍÓÚÑáéíóúñ]/g, '').slice(0, 2).toUpperCase() || '?');
       return `<div class="pcard ${st.cls}">
         <div class="avatar">${initials}</div>
         <div class="info">
           ${editing
-            ? `<input class="tag-in" data-edit="${p.id}" data-field="tag" value="${esc(p.tag)}" placeholder="Sin GamerTag" aria-label="GamerTag">`
-            : `<span class="tag">${esc(label(p))}</span><span class="sub">${p.tag ? esc(p.name) : 'Sin GamerTag'}</span>`}
+            ? `<input class="tag-in" data-edit="${p.id}" data-field="tag" value="${esc(p.tag)}" placeholder="Sin GamerTag" aria-label="GamerTag"><span class="sub">${esc(p.name)}</span>`
+            : `<span class="${tagClass(p)}">${esc(label(p))}</span><span class="sub">${esc(p.name)}</span>`}
           <span class="status">#${seedOf(p.id)}${st.text ? ' · ' + esc(st.text) : ''}</span>
         </div>
       </div>`;
