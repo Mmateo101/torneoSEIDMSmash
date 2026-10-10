@@ -539,25 +539,25 @@
 
   // ---------- Datos iniciales (inscripciones de Smash) ----------
   const DEFAULT_PLAYERS = [
-    { id: 'p1', tag: "NXCT", name: "Luis Elizondo Sánchez", main: "" },
-    { id: 'p2', tag: "PepeElPollo27", name: "Andres Galland", main: "" },
-    { id: 'p3', tag: "Vegettoblue86", name: "Jaill Gilberto García Maturino", main: "Steve" },
-    { id: 'p4', tag: "ImEddy013", name: "Ángel Eduardo Aguirre Rodríguez", main: "Terry" },
-    { id: 'p5', tag: "Sebazzu", name: "Sebastian Becerra Ojeda", main: "" },
-    { id: 'p6', tag: "AbbytoFAN", name: "Hiram Abisaí Miranda Pérez", main: "" },
-    { id: 'p7', tag: "TheRoman", name: "César Augusto Castillo Calderón", main: "" },
-    { id: 'p8', tag: "Juan_rv", name: "Juan Antonio Rivera Sandoval", main: "Steve" },
-    { id: 'p9', tag: "Alpro0204", name: "Aldo Contreras Castillo", main: "" },
-    { id: 'p10', tag: "RW", name: "Ricardo Alfonso Willis Garza", main: "" },
-    { id: 'p11', tag: "", name: "Alejandro Rodriguez Escalona", main: "" },
-    { id: 'p12', tag: "weird_dude586", name: "Braulio Elias Garcia Cruz", main: "" },
-    { id: 'p13', tag: "Sm07", name: "Marco Antonio Rebolledo Mérida", main: "Sephiroth, Terry" },
-    { id: 'p14', tag: "J-Butcher", name: "Jaime Barraza", main: "Terry Bogard" },
-    { id: 'p15', tag: "MF2150", name: "Diego Gael Flores Millán", main: "Hero" },
-    { id: 'p16', tag: "Mein_Armonia", name: "Gonzalo Tadeo Esparza Romero", main: "" },
+    { id: 'p1', tag: "NXCT", name: "Luis Elizondo Sánchez" },
+    { id: 'p2', tag: "PepeElPollo27", name: "Andres Galland" },
+    { id: 'p3', tag: "Vegettoblue86", name: "Jaill Gilberto García Maturino" },
+    { id: 'p4', tag: "ImEddy013", name: "Ángel Eduardo Aguirre Rodríguez" },
+    { id: 'p5', tag: "Sebazzu", name: "Sebastian Becerra Ojeda" },
+    { id: 'p6', tag: "AbbytoFAN", name: "Hiram Abisaí Miranda Pérez" },
+    { id: 'p7', tag: "TheRoman", name: "César Augusto Castillo Calderón" },
+    { id: 'p8', tag: "Juan_rv", name: "Juan Antonio Rivera Sandoval" },
+    { id: 'p9', tag: "Alpro0204", name: "Aldo Contreras Castillo" },
+    { id: 'p10', tag: "RW", name: "Ricardo Alfonso Willis Garza" },
+    { id: 'p11', tag: "", name: "Alejandro Rodriguez Escalona" },
+    { id: 'p12', tag: "weird_dude586", name: "Braulio Elias Garcia Cruz" },
+    { id: 'p13', tag: "Sm07", name: "Marco Antonio Rebolledo Mérida" },
+    { id: 'p14', tag: "J-Butcher", name: "Jaime Barraza" },
+    { id: 'p15', tag: "MF2150", name: "Diego Gael Flores Millán" },
+    { id: 'p16', tag: "Mein_Armonia", name: "Gonzalo Tadeo Esparza Romero" },
   ];
 
-  const DATA_VERSION = 2;
+  const DATA_VERSION = 3;
   const LOCAL_KEY = 'torneo-idm-smash:state';
   const PIN_KEY = 'torneo-idm-smash:pin';
 
@@ -589,7 +589,7 @@
     if (s.dataVersion === DATA_VERSION) return s;
     DEFAULT_PLAYERS.forEach(d => {
       const p = s.players.find(x => x.id === d.id);
-      if (p) Object.assign(p, { tag: d.tag, name: d.name, main: d.main });
+      if (p) { Object.assign(p, { tag: d.tag, name: d.name }); delete p.main; }
     });
     s.dataVersion = DATA_VERSION;
     return s;
@@ -609,7 +609,7 @@
   const playerById = id => state.players.find(p => p.id === id);
   // Si no registró GamerTag se muestra su nombre tal como lo escribió.
   const label = p => p.tag || p.name;
-  const subtitle = p => p.main || (p.tag ? p.name : 'Sin GamerTag');
+  const subtitle = p => (p.tag ? p.name : 'Sin GamerTag');
   const numRounds = () => Math.log2(state.order.length);
 
   function roundName(r) {
@@ -998,9 +998,8 @@
         <div class="avatar">${initials}</div>
         <div class="info">
           ${editing
-            ? `<input class="tag-in" data-edit="${p.id}" data-field="tag" value="${esc(p.tag)}" placeholder="Sin GamerTag" aria-label="GamerTag">
-               <input data-edit="${p.id}" data-field="main" value="${esc(p.main)}" placeholder="Personaje" aria-label="Personaje">`
-            : `<span class="tag">${esc(label(p))}</span><span class="sub">${p.tag ? esc(p.name) : 'Sin GamerTag'}${p.main ? ' · ' + esc(p.main) : ''}</span>`}
+            ? `<input class="tag-in" data-edit="${p.id}" data-field="tag" value="${esc(p.tag)}" placeholder="Sin GamerTag" aria-label="GamerTag">`
+            : `<span class="tag">${esc(label(p))}</span><span class="sub">${p.tag ? esc(p.name) : 'Sin GamerTag'}</span>`}
           <span class="status">#${seedOf(p.id)}${st.text ? ' · ' + esc(st.text) : ''}</span>
         </div>
       </div>`;
