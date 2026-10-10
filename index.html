@@ -147,6 +147,9 @@
   .btn:hover { background: var(--surface-2); }
   .btn.dark { background: var(--win); color: #fff; border-color: transparent; box-shadow: 0 0 14px rgba(255, 95, 224, .5); }
   .btn.dark:hover { filter: brightness(1.1); background: var(--win); }
+  .icon-btn { padding: 8px 12px; }
+  .icon-btn svg { display: block; }
+  body.editing .icon-btn { background: var(--win); color: #fff; border-color: transparent; box-shadow: 0 0 14px rgba(255, 95, 224, .5); }
   .save-state { font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
   .save-state::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--line-strong); }
   .save-state.ok::before { background: #5cf2a5; box-shadow: 0 0 8px #5cf2a5; }
@@ -187,7 +190,7 @@
   .slot + .slot { border-top: 1px solid var(--line); }
   .slot .seed { font-size: 11px; font-weight: 700; color: var(--muted); width: 18px; text-align: right; flex: none; }
   .slot .who { flex: 1; min-width: 0; }
-  .slot .tag { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+  .slot .tag { font-weight: 700; display: block; overflow-wrap: anywhere; line-height: 1.25; }
   .slot .sub { font-size: 11px; line-height: 1.3; color: var(--muted); display: block; overflow-wrap: anywhere; }
   .slot .score { font-family: Anton, Impact, sans-serif; font-weight: 400; font-size: 18px; min-width: 22px; text-align: center; color: var(--muted); }
   .slot.empty .tag { color: var(--line-strong); font-weight: 500; font-style: italic; }
@@ -195,9 +198,7 @@
   .slot.win .sub, .slot.win .seed, .slot.win .score { color: #ffe1f7; }
   .slot.win .tag { text-shadow: 0 0 10px rgba(255, 255, 255, .6); }
   .slot.lose .tag { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line-strong); }
-  body.editing .slot.pickable { cursor: pointer; }
-  body.editing .slot.pickable:hover:not(.win) { background: var(--surface-2); }
-  .score-in { width: 34px; padding: 2px 4px; text-align: center; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface-2); color: var(--text); font-family: Anton, Impact, sans-serif; font-weight: 400; font-size: 15px; }
+  .score-in { width: 40px; padding: 2px 4px; text-align: center; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface-2); color: var(--text); font-family: Anton, Impact, sans-serif; font-weight: 400; font-size: 15px; }
   .slot.win .score-in { background: rgba(20, 10, 60, .35); color: #fff; border-color: rgba(255, 255, 255, .45); }
 
   .champ { background: var(--surface); border: 2px solid var(--neon); box-shadow: 0 0 22px rgba(255, 95, 224, .55), inset 0 0 18px rgba(255, 95, 224, .2); border-radius: 14px; padding: 18px 14px; text-align: center; box-shadow: var(--shadow); }
@@ -205,30 +206,6 @@
   .champ .name { text-shadow: 0 0 6px rgba(255, 255, 255, .7), 0 0 18px var(--neon); font-family: Anton, Impact, sans-serif; font-weight: 400; font-size: 26px;  text-transform: uppercase; line-height: 1.1; margin-top: 6px; word-break: break-word; }
   .champ .name.tbd { color: var(--line-strong); }
   .champ .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
-
-  /* ---------- Rondas ---------- */
-  .round-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
-  .round-tabs .tab { font-size: 13px; padding: 6px 12px; }
-  .rounds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
-  .vs-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 12px; }
-  .vs-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
-  .chip { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink-soft); text-transform: uppercase; letter-spacing: .05em; }
-  .chip.done { background: var(--win); color: #fff; border-color: transparent; }
-  .chip.wait { color: var(--muted); background: transparent; border-style: dashed; }
-  .vs-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
-  .vs-p { border: 1px solid var(--line); border-radius: 8px; padding: 10px 8px; text-align: center; background: var(--surface); min-width: 0; }
-  .vs-p .tag { font-weight: 700; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .vs-p .sub { font-size: 11px; line-height: 1.3; color: var(--muted); display: block; overflow-wrap: anywhere; }
-  .vs-p.win { background: var(--win); border-color: transparent; color: #fff; box-shadow: 0 0 16px rgba(255, 95, 224, .45); }
-  .vs-p.win .sub { color: #ffe1f7; }
-  .vs-p.lose { opacity: .55; }
-  .vs-p.empty .tag { color: var(--line-strong); font-style: italic; font-weight: 500; }
-  body.editing .vs-p.pickable { cursor: pointer; }
-  body.editing .vs-p.pickable:hover:not(.win) { border-color: var(--neon); }
-  .vs { font-family: Anton, Impact, sans-serif; font-weight: 400; font-style: italic; font-size: 20px; color: var(--line-strong); }
-  .vs.score { color: var(--ink); font-size: 18px; font-style: normal; }
-  .next-up { margin-bottom: 16px; }
-  .next-up h3, .section-title { text-shadow: 0 0 12px rgba(255, 95, 224, .7); font-family: Anton, Impact, sans-serif; font-weight: 400; text-transform: uppercase; font-size: 18px; margin: 0 0 10px; letter-spacing: .03em; }
 
   /* ---------- Participantes ---------- */
   .players-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
@@ -258,7 +235,6 @@
     header.top { padding-top: 20px; }
     .stat { min-width: 0; flex: 1; padding: 6px 10px; }
     .stat b { font-size: 18px; }
-    .rounds-grid { grid-template-columns: 1fr; }
     .players-grid { grid-template-columns: 1fr 1fr; }
     .pcard { flex-direction: column; text-align: center; }
     .pcard .info { width: 100%; }
@@ -294,31 +270,22 @@
 
   <nav class="tabs" role="tablist">
     <button class="tab" role="tab" data-view="bracket" aria-selected="true">Bracket</button>
-    <button class="tab" role="tab" data-view="rounds" aria-selected="false">Combates por ronda</button>
     <button class="tab" role="tab" data-view="players" aria-selected="false">Participantes</button>
     <span class="spacer"></span>
     <span class="save-state" id="save-state">Cargando…</span>
-    <button class="btn" id="edit-toggle">Modo organizador</button>
+    <button class="btn icon-btn" id="edit-toggle" aria-label="Editar resultados" title="Editar resultados"></button>
   </nav>
 
   <div class="notice" id="notice"></div>
 
   <div class="toolbar">
-    <span class="hint"><b>Modo organizador:</b> toca a un jugador para marcarlo como ganador (tócalo de nuevo para deshacer). Puedes anotar el marcador.</span>
+    <span class="hint">Escribe los puntos de cada jugador. <b>El que tenga más puntos pasa automáticamente a la siguiente ronda.</b> Si borras o cambias un marcador, el bracket se corrige solo.</span>
     <span class="spacer"></span>
-    <button class="btn" id="btn-shuffle">Sortear bracket</button>
-    <button class="btn" id="btn-reset">Reiniciar resultados</button>
-    <button class="btn dark" id="btn-exit">Salir</button>
+    <button class="btn" id="btn-reset">Borrar todos los resultados</button>
   </div>
 
   <section class="view active" id="view-bracket">
     <div class="bracket-wrap"><div class="bracket" id="bracket"></div></div>
-  </section>
-
-  <section class="view" id="view-rounds">
-    <div class="next-up" id="next-up"></div>
-    <div class="round-tabs" id="round-tabs"></div>
-    <div class="rounds-grid" id="rounds-grid"></div>
   </section>
 
   <section class="view" id="view-players">
@@ -330,8 +297,8 @@
 
 <dialog id="pin-dialog">
   <form method="dialog" id="pin-form">
-    <h3>Modo organizador</h3>
-    <p>Ingresa el PIN para editar resultados.</p>
+    <h3>Editar resultados</h3>
+    <p>Ingresa el PIN para poder editar.</p>
     <input type="password" id="pin-input" inputmode="numeric" autocomplete="off" placeholder="PIN">
     <div class="err" id="pin-err"></div>
     <div class="row">
@@ -570,11 +537,6 @@
     for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
     return a;
   }
-  function randomShuffle(arr) {
-    const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
-    return a;
-  }
   function defaultState() {
     return {
       players: DEFAULT_PLAYERS.map(p => ({ ...p })),
@@ -603,7 +565,6 @@
   let pin = '';
   try { pin = localStorage.getItem(PIN_KEY) || ''; } catch {}
   let saveTimer = null, saving = false, dirty = false;
-  let roundFilter = null, roundPicked = false;
 
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -664,26 +625,19 @@
   }
   function champion() { return winnerOf(numRounds() - 1, 0); }
 
-  function setWinner(r, m, pid) {
-    if (!editing || !pid) return;
-    const ps = participants(r, m);
-    if (!ps[0] || !ps[1]) return;
-    const id = matchId(r, m);
-    const res = state.results[id] || {};
-    if (res.w === pid) delete res.w; else res.w = pid;
-    if (!res.w && !res.s) delete state.results[id]; else state.results[id] = res;
-    prune();
-    commit();
-  }
   function setScore(r, m, idx, val) {
     const id = matchId(r, m);
     const res = state.results[id] || {};
     const s = Array.isArray(res.s) ? res.s.slice() : ['', ''];
     s[idx] = val === '' ? '' : Math.max(0, Math.min(99, parseInt(val, 10) || 0));
-    res.s = (s[0] === '' && s[1] === '') ? undefined : s;
-    if (!res.s) delete res.s;
+    res.s = s;
+    // El ganador lo decide el marcador: quien tenga más puntos avanza.
+    const ps = participants(r, m);
+    if (s[0] !== '' && s[1] !== '' && s[0] !== s[1]) res.w = ps[s[0] > s[1] ? 0 : 1];
+    else delete res.w;
+    if (s[0] === '' && s[1] === '') delete res.s;
     if (!res.w && !res.s) delete state.results[id]; else state.results[id] = res;
-    commit(false);
+    prune();
   }
   function scoreOf(r, m) {
     const res = state.results[matchId(r, m)];
@@ -779,9 +733,18 @@
     el.classList.toggle('show', !!text);
   }
 
-  // ---------- Modo organizador ----------
-  function enterEdit() { editing = true; document.body.classList.add('editing'); $('#edit-toggle').textContent = 'Editando…'; render(); }
-  function exitEdit() { editing = false; document.body.classList.remove('editing'); $('#edit-toggle').textContent = 'Modo organizador'; render(); }
+  // ---------- Edición ----------
+  const PENCIL = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';
+  const CHECK = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg> Listo';
+  function setEditButton() {
+    const b = $('#edit-toggle');
+    b.innerHTML = editing ? CHECK : PENCIL;
+    b.title = editing ? 'Terminar de editar' : 'Editar resultados';
+    b.setAttribute('aria-label', b.title);
+  }
+  function enterEdit() { editing = true; document.body.classList.add('editing'); setEditButton(); render(); }
+  function exitEdit() { editing = false; document.body.classList.remove('editing'); setEditButton(); render(); }
+  setEditButton();
 
   async function checkPin(candidate) {
     const r = await fetch('/api/state', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-pin': candidate }, body: JSON.stringify({ check: true }) });
@@ -819,17 +782,8 @@
     }
     enterEdit();
   });
-  $('#btn-exit').addEventListener('click', exitEdit);
-  $('#btn-shuffle').addEventListener('click', () => {
-    const played = Object.values(state.results).some(r => r.w);
-    if (played && !confirm('Ya hay resultados. ¿Sortear de nuevo y borrar todos los resultados?')) return;
-    if (!played && !confirm('¿Sortear un nuevo orden de enfrentamientos?')) return;
-    state.order = randomShuffle(state.order);
-    state.results = {};
-    commit();
-  });
   $('#btn-reset').addEventListener('click', () => {
-    if (!confirm('¿Borrar todos los resultados? El orden del bracket se mantiene.')) return;
+    if (!confirm('¿Borrar todos los marcadores y resultados? Los enfrentamientos se mantienen.')) return;
     state.results = {};
     commit();
   });
@@ -850,11 +804,10 @@
     let cls = 'slot';
     if (!p) cls += ' empty';
     else if (winner) cls += winner === pid ? ' win' : ' lose';
-    if (p && ready) cls += ' pickable';
     const scoreHTML = editing && ready
       ? `<input class="score-in" type="number" min="0" max="99" inputmode="numeric" value="${esc(score[idx])}" data-score="${r},${m},${idx}" aria-label="Marcador ${esc(p ? shortName(p) : '')}">`
       : `<span class="score">${esc(score[idx])}</span>`;
-    return `<div class="${cls}" ${p && ready ? `data-pick="${r},${m},${pid}" role="button" tabindex="${editing ? 0 : -1}"` : ''}>
+    return `<div class="${cls}">
       <span class="seed">${p ? seedOf(pid) : ''}</span>
       <span class="who"><span class="${tagClass(p)}">${p ? esc(label(p)) : 'Por definir'}</span>${p ? `<span class="sub">${esc(p.name)}</span>` : ''}</span>
       ${scoreHTML}
@@ -914,32 +867,6 @@
     svg.innerHTML = d;
   }
 
-  function vsCardHTML(r, m) {
-    const ps = participants(r, m), w = winnerOf(r, m), sc = scoreOf(r, m);
-    const ready = ps.every(Boolean);
-    const side = pid => {
-      const p = pid && playerById(pid);
-      let cls = 'vs-p';
-      if (!p) cls += ' empty'; else if (w) cls += w === pid ? ' win' : ' lose';
-      if (p && ready) cls += ' pickable';
-      return `<div class="${cls}" ${p && ready ? `data-pick="${r},${m},${pid}" role="button" tabindex="${editing ? 0 : -1}"` : ''}>
-        <span class="${tagClass(p)}">${p ? esc(label(p)) : 'Por definir'}</span>
-        <span class="sub">${p ? esc(p.name) : feederText(r, m, ps.indexOf(pid))}</span>
-      </div>`;
-    };
-    const hasScore = sc[0] !== '' || sc[1] !== '';
-    const status = w ? '<span class="chip done">Terminado</span>' : ready ? '<span class="chip">Por jugar</span>' : '<span class="chip wait">En espera</span>';
-    return `<div class="vs-card">
-      <div class="vs-head"><span>Combate ${matchNumber(r, m)} · ${roundShort(r)}</span>${status}</div>
-      <div class="vs-row">${side(ps[0])}<span class="vs ${hasScore ? 'score' : ''}">${hasScore ? `${esc(sc[0] === '' ? 0 : sc[0])} – ${esc(sc[1] === '' ? 0 : sc[1])}` : 'VS'}</span>${side(ps[1])}</div>
-    </div>`;
-  }
-  function feederText(r, m, idx) {
-    if (r === 0) return '';
-    const fm = 2 * m + (idx < 0 ? 0 : idx);
-    return `Ganador combate ${matchNumber(r - 1, fm)}`;
-  }
-
   function currentRound() {
     for (let r = 0; r < numRounds(); r++) {
       const count = state.order.length >> (r + 1);
@@ -947,34 +874,6 @@
     }
     return null;
   }
-
-  function renderRounds() {
-    const R = numRounds(), cur = currentRound();
-    if (!roundPicked || roundFilter === null || roundFilter >= R) roundFilter = cur ?? R - 1;
-    // Próximos combates listos para jugarse
-    const ready = [];
-    forEachMatch((r, m) => { if (!winnerOf(r, m) && participants(r, m).every(Boolean)) ready.push([r, m]); });
-    const ch = champion(), cp = ch && playerById(ch);
-    $('#next-up').innerHTML = cp
-      ? `<h3>¡Tenemos campeón! 🏆 ${esc(shortName(cp))}</h3>`
-      : ready.length
-        ? `<h3>Siguientes combates</h3><div class="rounds-grid">${ready.slice(0, 3).map(([r, m]) => vsCardHTML(r, m)).join('')}</div>`
-        : '';
-    let tabs = '';
-    for (let r = 0; r < R; r++) tabs += `<button class="tab" data-round="${r}" aria-selected="${r === roundFilter}">${roundName(r)}</button>`;
-    $('#round-tabs').innerHTML = tabs;
-    const count = state.order.length >> (roundFilter + 1);
-    let cards = '';
-    for (let m = 0; m < count; m++) cards += vsCardHTML(roundFilter, m);
-    $('#rounds-grid').innerHTML = cards;
-  }
-  $('#round-tabs').addEventListener('click', e => {
-    const b = e.target.closest('[data-round]');
-    if (!b) return;
-    roundFilter = +b.dataset.round;
-    roundPicked = true;
-    renderRounds();
-  });
 
   function playerStatus(pid) {
     if (champion() === pid) return { cls: 'champion', text: '🏆 Campeón' };
@@ -1021,29 +920,40 @@
   function render() {
     renderStats();
     renderBracket();
-    renderRounds();
     renderPlayers();
   }
 
   // ---------- Interacción ----------
-  function handlePick(e) {
-    if (!editing) return;
-    if (e.target.closest('input')) return;
-    const el = e.target.closest('[data-pick]');
-    if (!el) return;
-    const [r, m, pid] = el.dataset.pick.split(',');
-    setWinner(+r, +m, pid);
+  // Los marcadores se juntan y se aplican de una vez: al salir de la casilla (Tab, Enter, tocar
+  // fuera) o tras una pausa al escribir. Después se devuelve el cursor a donde esté la persona.
+  const pendingScores = new Map();
+  let scoreTimer;
+  function queueScore(el, delay) {
+    pendingScores.set(el.dataset.score, el.value);
+    clearTimeout(scoreTimer);
+    scoreTimer = setTimeout(flushScores, delay);
   }
-  document.addEventListener('click', handlePick);
-  document.addEventListener('keydown', e => {
-    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('[data-pick]')) { e.preventDefault(); handlePick(e); }
+  function flushScores() {
+    if (!pendingScores.size) return;
+    const active = document.activeElement;
+    const activeKey = active && active.dataset ? active.dataset.score : null;
+    const caret = activeKey ? active.value.length : 0;
+    pendingScores.forEach((val, key) => {
+      const [r, m, idx] = key.split(',').map(Number);
+      setScore(r, m, idx, val);
+    });
+    pendingScores.clear();
+    commit();
+    const again = activeKey && document.querySelector(`#view-bracket [data-score="${activeKey}"]`);
+    if (again) { again.focus(); try { again.setSelectionRange(caret, caret); } catch {} }
+  }
+  document.addEventListener('input', e => {
+    if (e.target.dataset && e.target.dataset.score) queueScore(e.target, 900);
   });
   document.addEventListener('change', e => {
     const el = e.target;
     if (el.dataset.score) {
-      const [r, m, idx] = el.dataset.score.split(',').map(Number);
-      setScore(r, m, idx, el.value);
-      renderRounds();
+      queueScore(el, 0);
     } else if (el.dataset.edit) {
       const p = playerById(el.dataset.edit);
       if (!p) return;

@@ -3,9 +3,8 @@
 Bracket interactivo de eliminación directa (16 jugadores) para el torneo de **Super Smash Bros. Ultimate**.
 
 - **Bracket**: vista completa de octavos → final → campeón.
-- **Combates por ronda**: quién va contra quién en cada ronda y los siguientes combates por jugar.
-- **Participantes**: GamerTag, personaje y en qué ronda va cada jugador.
-- **Modo organizador**: toca a un jugador para marcarlo como ganador (tócalo de nuevo para deshacer), anota marcadores, sortea el bracket o reinicia resultados.
+- **Participantes**: GamerTag, nombre completo y en qué ronda va cada jugador.
+- **Editar (botón del lápiz ✏️)**: escribe los puntos de cada jugador; el que tenga más puntos pasa automáticamente a la siguiente ronda. Si cambias o borras un marcador, el bracket se corrige solo.
 
 Los cambios se guardan en línea (Upstash Redis) y todos los que abran la página los ven en unos segundos.
 
