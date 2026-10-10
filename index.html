@@ -7,7 +7,7 @@
 <meta name="description" content="Bracket interactivo del torneo de Super Smash Bros. Ultimate — Torneo E-Sports IDM, II Edición.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%232b2e33'/%3E%3Crect x='34' y='0' width='9' height='100' fill='%23fff'/%3E%3Crect x='0' y='60' width='100' height='9' fill='%23fff'/%3E%3C/svg%3E">
 <style>
   :root {
@@ -30,7 +30,7 @@
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-family: Poppins, system-ui, -apple-system, "Segoe UI", sans-serif;
     font-size: 15px;
     line-height: 1.45;
     min-height: 100vh;
@@ -38,47 +38,92 @@
   }
   button, input { font: inherit; color: inherit; }
 
-  /* ---------- Fondo Smash ---------- */
+  /* ---------- Fondo pixel (Mario Bros) ---------- */
   .bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
   .bg::before {
-    content: ""; position: absolute; inset: -50%;
-    background: repeating-linear-gradient(-28deg, transparent 0 46px, rgba(160, 166, 175, .07) 46px 48px);
+    content: ""; position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(150, 156, 165, .07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(150, 156, 165, .07) 1px, transparent 1px);
+    background-size: 32px 32px;
   }
-  .bg svg, .bg .pct { position: absolute; }
-  .bg .pct {
-    font-family: Oswald, Impact, sans-serif; font-weight: 700; font-style: italic;
-    color: transparent; -webkit-text-stroke: 2px var(--deco-2); letter-spacing: 2px; line-height: 1;
-    user-select: none;
+  .sprite { position: absolute; }
+  .sprite svg { display: block; shape-rendering: crispEdges; }
+  .ground {
+    position: fixed; left: 0; right: 0; bottom: 0; height: 32px; z-index: 0; pointer-events: none;
+    background-repeat: repeat-x; background-size: 32px 32px; image-rendering: pixelated; opacity: .9;
   }
-  .float { animation: float 9s ease-in-out infinite; }
-  .float.slow { animation-duration: 14s; }
-  .spin { animation: spin 60s linear infinite; }
-  @keyframes float { 0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); } 50% { transform: translateY(-14px) rotate(var(--r, 0deg)); } }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  @media (prefers-reduced-motion: reduce) { .float, .spin { animation: none; } }
+  .a-coin svg { animation: coin-spin .9s steps(4) infinite; transform-origin: center; }
+  .a-hop { animation: hop 2.6s infinite; }
+  .a-bump { animation: bump 3.2s steps(3) infinite; }
+  .a-pop { animation: pop 3.2s infinite; opacity: 0; }
+  .a-drift { animation: drift 16s steps(16) infinite alternate; }
+  .a-walk { animation: walk 34s linear infinite; }
+  .a-walk svg { animation: waddle .5s steps(2) infinite; }
+  .a-twinkle { animation: twinkle 2.4s steps(3) infinite; }
+  @keyframes coin-spin { 0% { transform: scaleX(1); } 25% { transform: scaleX(.55); } 50% { transform: scaleX(.15); } 75% { transform: scaleX(.55); } }
+  @keyframes hop {
+    0% { transform: translateY(0); animation-timing-function: cubic-bezier(.2, .7, .4, 1); }
+    50% { transform: translateY(-70px) rotate(12deg); animation-timing-function: cubic-bezier(.6, 0, .8, .3); }
+    100% { transform: translateY(0); }
+  }
+  @keyframes bump { 0%, 82%, 100% { transform: translateY(0); } 88% { transform: translateY(-10px); } 94% { transform: translateY(0); } }
+  @keyframes pop { 0%, 84% { opacity: 0; transform: translateY(0); } 87% { opacity: 1; } 96% { opacity: 1; transform: translateY(-64px); } 100% { opacity: 0; transform: translateY(-64px); } }
+  @keyframes drift { from { transform: translateX(0); } to { transform: translateX(64px); } }
+  @keyframes walk { from { transform: translateX(-80px); } to { transform: translateX(calc(100vw + 80px)); } }
+  @keyframes waddle { 0% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+  @keyframes twinkle { 0%, 100% { opacity: .9; } 50% { opacity: .35; } }
+  @media (prefers-reduced-motion: reduce) { .sprite, .sprite svg { animation: none !important; } .a-pop { display: none; } }
 
   /* ---------- Layout ---------- */
-  .app { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 0 16px 48px; }
-  header.top { padding: 28px 0 8px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
-  .brand { display: flex; align-items: center; gap: 14px; }
-  .brand svg { flex: none; }
-  .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
-  h1 {
-    font-family: Oswald, Impact, sans-serif; font-weight: 700; text-transform: uppercase;
-    font-size: clamp(28px, 5vw, 44px); line-height: 1; margin: 2px 0 0; letter-spacing: .01em;
+  .app { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 16px 16px 72px; }
+  header.hero {
+    position: relative; overflow: hidden; border-radius: 22px; color: #fff;
+    background:
+      radial-gradient(120% 90% at 50% 0%, #4a4e56 0%, #2b2e33 55%, #1b1d21 100%);
+    box-shadow: 0 10px 40px rgba(20, 22, 26, .22);
+    padding: 28px 28px 22px;
   }
-  h1 em { font-style: italic; color: var(--muted); }
+  header.hero::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, .04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, .04) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+  .hero-sprites { position: absolute; inset: 0; pointer-events: none; opacity: .16; }
+  @media (max-width: 640px) { .hero-sprites { opacity: .1; } .bg .sprite { opacity: .7; } }
+  .hero-inner { position: relative; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 20px; }
+  .edition { font-family: Poppins, sans-serif; font-weight: 700; font-size: clamp(18px, 2.4vw, 26px); text-shadow: 0 0 14px rgba(255, 255, 255, .45); }
+  .edition sup { font-size: .6em; }
+  h1 {
+    font-family: Anton, Impact, sans-serif; font-weight: 400;
+    font-size: clamp(46px, 8.5vw, 96px); line-height: .98; margin: 4px 0 14px; letter-spacing: .005em;
+    color: #fff;
+    text-shadow: 0 0 6px rgba(255, 255, 255, .55), 0 0 22px rgba(255, 255, 255, .35), 0 0 48px rgba(210, 214, 220, .35);
+  }
+  h1 span { display: inline-block; margin-right: .18em; }
+  .game-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #f1f2f4; color: #1c1e22; border-radius: 99px; padding: 7px 18px 7px 8px;
+    font-family: Poppins, sans-serif; font-weight: 700; font-size: 15px;
+    box-shadow: 0 0 18px rgba(255, 255, 255, .35);
+  }
   .stats { display: flex; gap: 10px; flex-wrap: wrap; }
-  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 14px; min-width: 92px; box-shadow: var(--shadow); }
-  .stat b { display: block; font-family: Oswald, sans-serif; font-size: 22px; line-height: 1.1; }
-  .stat span { font-size: 12px; color: var(--muted); }
-  .progress { height: 6px; background: var(--surface-2); border-radius: 99px; overflow: hidden; margin: 14px 0 0; border: 1px solid var(--line); }
-  .progress i { display: block; height: 100%; background: var(--ink); width: 0; transition: width .4s; }
+  .stat {
+    background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .16);
+    border-radius: 14px; padding: 8px 14px; min-width: 96px; backdrop-filter: blur(4px);
+  }
+  .stat b { display: block; font-family: Anton, Impact, sans-serif; font-weight: 400; font-size: 26px; line-height: 1.15; text-shadow: 0 0 12px rgba(255, 255, 255, .4); }
+  .stat span { font-size: 12px; color: #c4c8ce; font-weight: 500; }
+  .progress { position: relative; height: 8px; background: rgba(255, 255, 255, .1); border-radius: 0; overflow: hidden; margin: 20px 0 0; }
+  .progress i { display: block; height: 100%; width: 0; transition: width .4s steps(8);
+    background: repeating-linear-gradient(90deg, #f1f2f4 0 8px, #c9ccd1 8px 16px); box-shadow: 0 0 10px rgba(255, 255, 255, .6); }
 
   nav.tabs { display: flex; gap: 6px; margin: 20px 0 16px; flex-wrap: wrap; align-items: center; }
   .tab {
-    border: 1px solid var(--line); background: var(--surface); padding: 8px 16px; border-radius: 99px;
-    cursor: pointer; font-weight: 600; font-size: 14px; color: var(--ink-soft);
+    border: 1px solid var(--line); background: var(--surface); padding: 8px 18px; border-radius: 99px;
+    cursor: pointer; font-weight: 700; font-size: 14px; color: var(--ink-soft);
   }
   .tab:hover { border-color: var(--line-strong); }
   .tab[aria-selected="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
@@ -117,7 +162,7 @@
   .bracket svg.lines path.done { stroke: var(--ink); }
   .col { flex: 1; display: flex; flex-direction: column; min-width: 180px; }
   .col-head { text-align: center; margin-bottom: 10px; }
-  .col-head b { display: block; font-family: Oswald, sans-serif; text-transform: uppercase; font-size: 16px; letter-spacing: .04em; }
+  .col-head b { display: block; font-family: Anton, Impact, sans-serif; font-weight: 400; text-transform: uppercase; font-size: 20px; letter-spacing: .03em; }
   .col-head span { font-size: 12px; color: var(--muted); }
   .col-body { flex: 1; display: flex; flex-direction: column; justify-content: space-around; gap: 14px; min-height: 760px; }
 
@@ -132,19 +177,19 @@
   .slot .who { flex: 1; min-width: 0; }
   .slot .tag { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
   .slot .sub { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
-  .slot .score { font-family: Oswald, sans-serif; font-size: 18px; min-width: 22px; text-align: center; color: var(--muted); }
+  .slot .score { font-family: Anton, Impact, sans-serif; font-weight: 400; font-size: 18px; min-width: 22px; text-align: center; color: var(--muted); }
   .slot.empty .tag { color: var(--line-strong); font-weight: 500; font-style: italic; }
   .slot.win { background: var(--ink); color: #fff; }
   .slot.win .sub, .slot.win .seed, .slot.win .score { color: #c9ccd1; }
   .slot.lose .tag { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line-strong); }
   body.editing .slot.pickable { cursor: pointer; }
   body.editing .slot.pickable:hover:not(.win) { background: var(--surface-2); }
-  .score-in { width: 34px; padding: 2px 4px; text-align: center; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); color: var(--text); font-family: Oswald, sans-serif; font-size: 15px; }
+  .score-in { width: 34px; padding: 2px 4px; text-align: center; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); color: var(--text); font-family: Anton, Impact, sans-serif; font-weight: 400; font-size: 15px; }
   .slot.win .score-in { background: #3a3e44; color: #fff; border-color: #5a5e66; }
 
   .champ { background: var(--surface); border: 2px solid var(--ink); border-radius: 14px; padding: 18px 14px; text-align: center; box-shadow: var(--shadow); }
   .champ .label { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
-  .champ .name { font-family: Oswald, sans-serif; font-size: 26px; font-weight: 700; text-transform: uppercase; line-height: 1.1; margin-top: 6px; word-break: break-word; }
+  .champ .name { font-family: Anton, Impact, sans-serif; font-weight: 400; font-size: 26px;  text-transform: uppercase; line-height: 1.1; margin-top: 6px; word-break: break-word; }
   .champ .name.tbd { color: var(--line-strong); }
   .champ .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
@@ -167,15 +212,15 @@
   .vs-p.empty .tag { color: var(--line-strong); font-style: italic; font-weight: 500; }
   body.editing .vs-p.pickable { cursor: pointer; }
   body.editing .vs-p.pickable:hover:not(.win) { border-color: var(--ink); }
-  .vs { font-family: Oswald, sans-serif; font-style: italic; font-weight: 700; font-size: 20px; color: var(--line-strong); }
+  .vs { font-family: Anton, Impact, sans-serif; font-weight: 400; font-style: italic; font-size: 20px; color: var(--line-strong); }
   .vs.score { color: var(--ink); font-size: 18px; font-style: normal; }
   .next-up { margin-bottom: 16px; }
-  .next-up h3, .section-title { font-family: Oswald, sans-serif; text-transform: uppercase; font-size: 18px; margin: 0 0 10px; letter-spacing: .03em; }
+  .next-up h3, .section-title { font-family: Anton, Impact, sans-serif; font-weight: 400; text-transform: uppercase; font-size: 18px; margin: 0 0 10px; letter-spacing: .03em; }
 
   /* ---------- Participantes ---------- */
   .players-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
   .pcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow); display: flex; gap: 10px; align-items: center; }
-  .pcard .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--line); display: grid; place-items: center; font-family: Oswald, sans-serif; font-weight: 700; color: var(--ink-soft); flex: none; }
+  .pcard .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--line); display: grid; place-items: center; font-family: Anton, Impact, sans-serif; font-weight: 400; color: var(--ink-soft); flex: none; }
   .pcard.out .avatar { opacity: .5; }
   .pcard.champion .avatar { background: var(--ink); color: #fff; border-color: var(--ink); }
   .pcard .info { min-width: 0; flex: 1; }
@@ -189,7 +234,7 @@
 
   dialog { border: 1px solid var(--line); border-radius: 12px; padding: 20px; max-width: 340px; width: calc(100% - 32px); box-shadow: 0 20px 60px rgba(0,0,0,.18); background: var(--surface); color: var(--text); }
   dialog::backdrop { background: rgba(30, 32, 36, .35); }
-  dialog h3 { margin: 0 0 6px; font-family: Oswald, sans-serif; text-transform: uppercase; }
+  dialog h3 { margin: 0 0 6px; font-family: Anton, Impact, sans-serif; font-weight: 400; text-transform: uppercase; }
   dialog p { margin: 0 0 12px; font-size: 13px; color: var(--muted); }
   dialog input { width: 100%; padding: 9px 10px; border: 1px solid var(--line-strong); border-radius: 8px; font-size: 16px; margin-bottom: 12px; background: var(--surface); }
   dialog .row { display: flex; gap: 8px; justify-content: flex-end; }
@@ -208,82 +253,30 @@
 </head>
 <body>
 
-<!-- Elementos de fondo inspirados en Smash -->
-<div class="bg" aria-hidden="true">
-  <!-- Logo Smash grande -->
-  <svg class="spin" style="right:-140px; top:-120px; width:520px; height:520px" viewBox="0 0 100 100">
-    <circle cx="50" cy="50" r="48" fill="var(--deco)"/>
-    <rect x="35" y="0" width="7" height="100" fill="var(--bg)"/>
-    <rect x="0" y="60" width="100" height="7" fill="var(--bg)"/>
-  </svg>
-  <!-- Smash Ball -->
-  <svg class="float" style="left:3%; top:58%; width:150px; height:150px; --r:-12deg" viewBox="0 0 100 100">
-    <circle cx="50" cy="50" r="44" fill="none" stroke="var(--deco-2)" stroke-width="4"/>
-    <path d="M10 42 C 35 30, 65 30, 90 42" fill="none" stroke="var(--deco-2)" stroke-width="4"/>
-    <path d="M10 58 C 35 70, 65 70, 90 58" fill="none" stroke="var(--deco-2)" stroke-width="4"/>
-    <path d="M42 8 C 30 35, 30 65, 42 92" fill="none" stroke="var(--deco-2)" stroke-width="4"/>
-    <path d="M58 8 C 70 35, 70 65, 58 92" fill="none" stroke="var(--deco-2)" stroke-width="4"/>
-  </svg>
-  <!-- Escenario tipo Battlefield -->
-  <svg class="float slow" style="left:50%; bottom:-10px; width:640px; max-width:90vw; transform:translateX(-50%)" viewBox="0 0 320 90">
-    <rect x="70" y="10" width="54" height="7" rx="3" fill="var(--deco-2)"/>
-    <rect x="196" y="10" width="54" height="7" rx="3" fill="var(--deco-2)"/>
-    <rect x="133" y="-14" width="54" height="7" rx="3" fill="var(--deco-2)"/>
-    <path d="M30 40 H290 L262 62 Q 230 90 160 90 Q 90 90 58 62 Z" fill="var(--deco)"/>
-    <rect x="30" y="36" width="260" height="6" rx="2" fill="var(--deco-2)"/>
-  </svg>
-  <!-- Plataforma Destino Final -->
-  <svg class="float" style="right:4%; top:46%; width:220px; --r:4deg" viewBox="0 0 200 50">
-    <path d="M0 6 H200 L170 30 L100 46 L30 30 Z" fill="var(--deco)"/>
-    <rect x="0" y="2" width="200" height="5" fill="var(--deco-2)"/>
-  </svg>
-  <!-- Porcentajes de daño -->
-  <div class="pct float" style="left:2%; top:14%; font-size:110px; --r:-8deg">0%</div>
-  <div class="pct float slow" style="right:16%; top:74%; font-size:90px; --r:6deg">127%</div>
-  <div class="pct" style="left:40%; top:30%; font-size:150px; opacity:.55; transform:rotate(-6deg)">GAME!</div>
-  <!-- Stocks -->
-  <svg class="float slow" style="left:22%; top:86%; width:150px" viewBox="0 0 150 30">
-    <circle cx="15" cy="15" r="12" fill="var(--deco-2)"/><circle cx="55" cy="15" r="12" fill="var(--deco-2)"/><circle cx="95" cy="15" r="12" fill="var(--deco-2)"/>
-    <circle cx="135" cy="15" r="12" fill="none" stroke="var(--deco-2)" stroke-width="3"/>
-  </svg>
-  <!-- Estrella KO -->
-  <svg class="float" style="left:62%; top:8%; width:60px; --r:14deg" viewBox="0 0 24 24">
-    <path d="M12 1.5l3.1 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.3l-6.4 3.6 1.5-7.1L1.7 8.9l7.2-.8z" fill="var(--deco-2)"/>
-  </svg>
-  <svg class="float slow" style="left:12%; top:40%; width:34px; --r:-20deg" viewBox="0 0 24 24">
-    <path d="M12 1.5l3.1 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.3l-6.4 3.6 1.5-7.1L1.7 8.9l7.2-.8z" fill="var(--deco-2)"/>
-  </svg>
-  <!-- Mando / botones -->
-  <svg class="float" style="right:30%; top:20%; width:80px; --r:-10deg" viewBox="0 0 40 40">
-    <circle cx="20" cy="8" r="6" fill="none" stroke="var(--deco-2)" stroke-width="2.5"/>
-    <circle cx="20" cy="32" r="6" fill="none" stroke="var(--deco-2)" stroke-width="2.5"/>
-    <circle cx="8" cy="20" r="6" fill="none" stroke="var(--deco-2)" stroke-width="2.5"/>
-    <circle cx="32" cy="20" r="6" fill="var(--deco-2)"/>
-  </svg>
-</div>
+<!-- Fondo pixel animado estilo Mario Bros (se genera en JS) -->
+<div class="bg" id="bg" aria-hidden="true"></div>
+<div class="ground" id="ground" aria-hidden="true"></div>
 
 <div class="app">
-  <header class="top">
-    <div>
-      <div class="brand">
-        <svg width="52" height="52" viewBox="0 0 100 100" aria-hidden="true">
-          <circle cx="50" cy="50" r="48" fill="var(--ink)"/>
-          <rect x="35" y="0" width="8" height="100" fill="#fff"/>
-          <rect x="0" y="60" width="100" height="8" fill="#fff"/>
-        </svg>
-        <div>
-          <div class="eyebrow">Torneo E-Sports IDM · II Edición</div>
-          <h1>Super Smash Bros. <em>Ultimate</em></h1>
+  <header class="hero">
+    <div class="hero-sprites" id="hero-sprites" aria-hidden="true"></div>
+    <div class="hero-inner">
+      <div>
+        <div class="edition">2<sup>a</sup> Edición</div>
+        <h1><span>Torneo</span><span>E-Sports</span><span>IDM</span></h1>
+        <div class="game-pill">
+          <svg width="26" height="26" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="48" fill="#2b2e33"/><rect x="35" y="0" width="8" height="100" fill="#f1f2f4"/><rect x="0" y="60" width="100" height="8" fill="#f1f2f4"/></svg>
+          Super Smash Bros. Ultimate
         </div>
       </div>
+      <div class="stats">
+        <div class="stat"><b id="st-players">16</b><span>Jugadores</span></div>
+        <div class="stat"><b id="st-played">0/15</b><span>Combates</span></div>
+        <div class="stat"><b id="st-round">Octavos</b><span>Ronda</span></div>
+      </div>
     </div>
-    <div class="stats">
-      <div class="stat"><b id="st-players">16</b><span>Jugadores</span></div>
-      <div class="stat"><b id="st-played">0/15</b><span>Combates</span></div>
-      <div class="stat"><b id="st-round">Octavos</b><span>Ronda</span></div>
-    </div>
+    <div class="progress" aria-hidden="true"><i id="progress"></i></div>
   </header>
-  <div class="progress" aria-hidden="true"><i id="progress"></i></div>
 
   <nav class="tabs" role="tablist">
     <button class="tab" role="tab" data-view="bracket" aria-selected="true">Bracket</button>
@@ -333,6 +326,191 @@
     </div>
   </form>
 </dialog>
+
+<script>
+// Sprites pixel-art originales inspirados en Mario Bros, en escala de grises.
+(() => {
+  const SPRITES = {
+    star: [
+      '.......kk.......',
+      '......kyyk......',
+      '......kyyk......',
+      '.....kyyyyk.....',
+      'kkkkkyyyyyykkkkk',
+      'kyyyyyyyyyyyyyyk',
+      '.kyyyykyykyyyyk.',
+      '..kyyykyykyyyk..',
+      '...kyykyykyyk...',
+      '...kyyyyyyyyk...',
+      '..kyyyyyyyyyyk..',
+      '..kyyyykkyyyyk..',
+      '.kyyyyk..kyyyyk.',
+      '.kyyk......kyyk.',
+      'kkk..........kkk',
+    ],
+    mushroom: [
+      '.....kkkkkk.....',
+      '...kkwwmmmmkk...',
+      '..kwwwwmmmmwwk..',
+      '.kmwwwwmmmmwwwk.',
+      '.kmmwwwwwwwwwmk.',
+      'kmmmwwwwwwwwmmmk',
+      'kwmmmwwwwwwmmmwk',
+      'kwwmmwwwwwwmmwwk',
+      'kwwmmwwwwwwmmwwk',
+      'kmmmkkkkkkkkmmmk',
+      '.kkkwwkwwkwwkkk.',
+      '...kwwkwwkwwk...',
+      '...kwwwwwwwwk...',
+      '....kwwwwwwk....',
+      '.....kkkkkk.....',
+    ],
+    coin: [
+      '...kkkk...',
+      '..kwwyyk..',
+      '.kwyyyyyk.',
+      '.kwyykyyk.',
+      '.kwyykyyk.',
+      '.kwyykyyk.',
+      '.kwyykyyk.',
+      '.kwyykyyk.',
+      '.kwyyyyyk.',
+      '..kyyyyk..',
+      '...kkkk...',
+    ],
+    qblock: [
+      'kkkkkkkkkkkkkkkk',
+      'kwyyyyyyyyyyyywk',
+      'kyyyyykkkkyyyyyk',
+      'kyyyykkyykkyyyyk',
+      'kyyyykkyykkyyyyk',
+      'kyyyyyyyykkyyyyk',
+      'kyyyyyyykkyyyyyk',
+      'kyyyyyykkyyyyyyk',
+      'kyyyyyykkyyyyyyk',
+      'kyyyyyyyyyyyyyyk',
+      'kyyyyyykkyyyyyyk',
+      'kyyyyyykkyyyyyyk',
+      'kwyyyyyyyyyyyywk',
+      'kkkkkkkkkkkkkkkk',
+    ],
+    brick: [
+      'kkkkkkkkkkkkkkkk',
+      'mmmmmmmkmmmmmmmk',
+      'mmmmmmmkmmmmmmmk',
+      'mmmmmmmkmmmmmmmk',
+      'kkkkkkkkkkkkkkkk',
+      'mmmkmmmmmmmkmmmm',
+      'mmmkmmmmmmmkmmmm',
+      'mmmkmmmmmmmkmmmm',
+      'kkkkkkkkkkkkkkkk',
+      'mmmmmmmkmmmmmmmk',
+      'mmmmmmmkmmmmmmmk',
+      'mmmmmmmkmmmmmmmk',
+      'kkkkkkkkkkkkkkkk',
+      'mmmkmmmmmmmkmmmm',
+      'mmmkmmmmmmmkmmmm',
+      'kkkkkkkkkkkkkkkk',
+    ],
+    cloud: [
+      '.......kkkk.........',
+      '......kwwwwk..kkk...',
+      '....kkwwwwwwkkwwwk..',
+      '...kwwwwwwwwwwwwwwk.',
+      '.kkwwwwwwwwwwwwwwwk.',
+      'kwwwwwwwwwwwwwwwwwwk',
+      'kwwwwwwwwwwwwwwwwwwk',
+      '.kwwwwwmwwwwwmwwwwk.',
+      '..kkkkkkkkkkkkkkkk..',
+    ],
+    pipe: [
+      'kkkkkkkkkkkkkkkk',
+      'kwwmmmmmmmmmmmyk',
+      'kwwmmmmmmmmmmmyk',
+      'kwwmmmmmmmmmmmyk',
+      'kkkkkkkkkkkkkkkk',
+      '.kwwmmmmmmmmmyk.',
+      '.kwwmmmmmmmmmyk.',
+      '.kwwmmmmmmmmmyk.',
+      '.kwwmmmmmmmmmyk.',
+      '.kwwmmmmmmmmmyk.',
+      '.kwwmmmmmmmmmyk.',
+      '.kwwmmmmmmmmmyk.',
+    ],
+    shell: [
+      '.....kkkkkk.....',
+      '...kkmmwwmmkk...',
+      '..kmmkwwwwkmmk..',
+      '.kmmkwwkkwwkmmk.',
+      '.kmkwwkmmkwwkmk.',
+      'kmmkwkmmmmkwkmmk',
+      'kmmkwkmmmmkwkmmk',
+      'kkkkkkkkkkkkkkkk',
+      'kwwwwwwwwwwwwwwk',
+      '.kkkkkkkkkkkkkk.',
+    ],
+  };
+  const LIGHT = { k: '#a4a9b1', m: '#c4c8ce', y: '#d9dce0', w: '#eff0f2' };
+  const ON_DARK = { k: '#ffffff', m: '#d9dce0', y: '#eef0f2', w: '#ffffff' };
+
+  function svg(name, px, pal) {
+    const rows = SPRITES[name], w = rows[0].length, h = rows.length;
+    let rects = '';
+    rows.forEach((row, y) => {
+      for (let x = 0; x < w; x++) {
+        const c = row[x];
+        if (c !== '.') rects += `<rect x="${x}" y="${y}" width="1" height="1" fill="${pal[c]}"/>`;
+      }
+    });
+    return `<svg width="${w * px}" height="${h * px}" viewBox="0 0 ${w} ${h}">${rects}</svg>`;
+  }
+  function place(host, name, { px = 4, pal = LIGHT, cls = '', style = '', delay = 0 }) {
+    const el = document.createElement('div');
+    el.className = `sprite ${cls}`;
+    el.style.cssText = style + (delay ? `;animation-delay:${delay}s` : '');
+    el.innerHTML = svg(name, px, pal);
+    if (delay) { const s = el.querySelector('svg'); if (s) s.style.animationDelay = `${delay}s`; }
+    host.appendChild(el);
+    return el;
+  }
+
+  // Fondo de la página
+  const bg = document.getElementById('bg');
+  place(bg, 'cloud', { px: 5, cls: 'a-drift', style: 'left:4%;top:16%' });
+  place(bg, 'cloud', { px: 4, cls: 'a-drift', style: 'left:58%;top:30%', delay: -6 });
+  place(bg, 'cloud', { px: 3, cls: 'a-drift', style: 'left:82%;top:64%', delay: -11 });
+  // Fila de bloques con monedas que saltan
+  [['qblock', 0], ['brick', 64], ['qblock', 128], ['brick', 192]].forEach(([n, dx], i) => {
+    const left = `calc(66% + ${dx}px)`;
+    if (n === 'qblock') place(bg, 'coin', { px: 4, cls: 'a-pop', style: `left:calc(66% + ${dx + 12}px);top:calc(48% - 44px)`, delay: -i * .8 });
+    place(bg, n, { px: 4, cls: n === 'qblock' ? 'a-bump' : '', style: `left:${left};top:48%`, delay: -i * .8 });
+  });
+  place(bg, 'qblock', { px: 4, cls: 'a-bump', style: 'left:10%;top:44%', delay: -1.6 });
+  place(bg, 'coin', { px: 4, cls: 'a-pop', style: 'left:calc(10% + 12px);top:calc(44% - 44px)', delay: -1.6 });
+  // Monedas girando
+  place(bg, 'coin', { px: 4, cls: 'a-coin', style: 'left:30%;top:58%' });
+  place(bg, 'coin', { px: 4, cls: 'a-coin', style: 'left:calc(30% + 56px);top:58%', delay: -.3 });
+  place(bg, 'coin', { px: 4, cls: 'a-coin', style: 'left:calc(30% + 112px);top:58%', delay: -.6 });
+  place(bg, 'coin', { px: 3, cls: 'a-coin', style: 'left:90%;top:26%', delay: -.4 });
+  // Estrellas que rebotan
+  place(bg, 'star', { px: 5, cls: 'a-hop', style: 'left:18%;top:76%' });
+  place(bg, 'star', { px: 4, cls: 'a-hop a-twinkle', style: 'left:86%;top:80%', delay: -1.2 });
+  // Suelo, tubo y personajes caminando
+  place(bg, 'pipe', { px: 4, style: 'right:9%;bottom:32px' });
+  place(bg, 'mushroom', { px: 3, cls: 'a-walk', style: 'left:0;bottom:32px' });
+  place(bg, 'shell', { px: 3, cls: 'a-walk', style: 'left:0;bottom:32px', delay: -17 });
+
+  const brickUri = 'data:image/svg+xml,' + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">${svg('brick', 1, LIGHT).replace(/^<svg[^>]*>|<\/svg>$/g, '')}</svg>`);
+  document.getElementById('ground').style.backgroundImage = `url("${brickUri}")`;
+
+  // Decoración dentro del encabezado (como el póster)
+  const hero = document.getElementById('hero-sprites');
+  place(hero, 'star', { px: 7, cls: 'a-hop', style: 'right:3%;top:8%', pal: ON_DARK });
+  place(hero, 'mushroom', { px: 6, style: 'right:24%;top:-30px;transform:rotate(-14deg)', pal: ON_DARK });
+  place(hero, 'coin', { px: 4, cls: 'a-coin', style: 'right:38%;top:22%', pal: ON_DARK });
+})();
+</script>
 
 <script>
 (() => {
