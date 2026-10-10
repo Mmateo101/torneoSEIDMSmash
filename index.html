@@ -539,24 +539,25 @@
 
   // ---------- Datos iniciales (inscripciones de Smash) ----------
   const DEFAULT_PLAYERS = [
-    { id: 'p1',  tag: 'NXCT',          name: 'Luis Elizondo',      main: '' },
-    { id: 'p2',  tag: 'PepeElPollo27', name: 'Andrés Galland',     main: '' },
-    { id: 'p3',  tag: 'Vegettoblue86', name: 'Jaill García',       main: 'Steve' },
-    { id: 'p4',  tag: 'ImEddy013',     name: 'Ángel Aguirre',      main: 'Terry' },
-    { id: 'p5',  tag: 'Sebazzu',       name: 'Sebastián Becerra',  main: '' },
-    { id: 'p6',  tag: 'AbbytoFAN',     name: 'Hiram Miranda',      main: '' },
-    { id: 'p7',  tag: 'TheRoman',      name: 'César Castillo',     main: '' },
-    { id: 'p8',  tag: 'Juan_rv',       name: 'Juan Antonio Rivera', main: 'Steve' },
-    { id: 'p9',  tag: 'Alpro0204',     name: 'Aldo Contreras',     main: '' },
-    { id: 'p10', tag: 'RW',            name: 'Ricardo Willis',     main: 'Varios' },
-    { id: 'p11', tag: 'Alejandro R.',  name: 'Alejandro Rodríguez', main: '' },
-    { id: 'p12', tag: 'weird_dude586', name: 'Braulio García',     main: '' },
-    { id: 'p13', tag: 'Sm07',          name: 'Marco Rebolledo',    main: 'Sephiroth, Terry' },
-    { id: 'p14', tag: 'J-Butcher',     name: 'Jaime Barraza',      main: 'Terry' },
-    { id: 'p15', tag: 'MF2150',        name: 'Diego Gael Flores',  main: 'Hero' },
-    { id: 'p16', tag: 'Mein_Armonia',  name: 'Gonzalo Esparza',    main: '' },
+    { id: 'p1', tag: "NXCT", name: "Luis Elizondo Sánchez", main: "" },
+    { id: 'p2', tag: "PepeElPollo27", name: "Andres Galland", main: "" },
+    { id: 'p3', tag: "Vegettoblue86", name: "Jaill Gilberto García Maturino", main: "Steve" },
+    { id: 'p4', tag: "ImEddy013", name: "Ángel Eduardo Aguirre Rodríguez", main: "Terry" },
+    { id: 'p5', tag: "Sebazzu", name: "Sebastian Becerra Ojeda", main: "" },
+    { id: 'p6', tag: "AbbytoFAN", name: "Hiram Abisaí Miranda Pérez", main: "" },
+    { id: 'p7', tag: "TheRoman", name: "César Augusto Castillo Calderón", main: "" },
+    { id: 'p8', tag: "Juan_rv", name: "Juan Antonio Rivera Sandoval", main: "Steve" },
+    { id: 'p9', tag: "Alpro0204", name: "Aldo Contreras Castillo", main: "" },
+    { id: 'p10', tag: "RW", name: "Ricardo Alfonso Willis Garza", main: "" },
+    { id: 'p11', tag: "", name: "Alejandro Rodriguez Escalona", main: "" },
+    { id: 'p12', tag: "weird_dude586", name: "Braulio Elias Garcia Cruz", main: "" },
+    { id: 'p13', tag: "Sm07", name: "Marco Antonio Rebolledo Mérida", main: "Sephiroth, Terry" },
+    { id: 'p14', tag: "J-Butcher", name: "Jaime Barraza", main: "Terry Bogard" },
+    { id: 'p15', tag: "MF2150", name: "Diego Gael Flores Millán", main: "Hero" },
+    { id: 'p16', tag: "Mein_Armonia", name: "Gonzalo Tadeo Esparza Romero", main: "" },
   ];
 
+  const DATA_VERSION = 2;
   const LOCAL_KEY = 'torneo-idm-smash:state';
   const PIN_KEY = 'torneo-idm-smash:pin';
 
@@ -579,7 +580,19 @@
       order: seededShuffle(DEFAULT_PLAYERS.map(p => p.id), 2026),
       results: {},
       updatedAt: 0,
+      dataVersion: DATA_VERSION,
     };
+  }
+  // Corrige nombres/GamerTags de estados guardados con la versión anterior de la lista,
+  // conservando el orden del bracket y los resultados.
+  function migrate(s) {
+    if (s.dataVersion === DATA_VERSION) return s;
+    DEFAULT_PLAYERS.forEach(d => {
+      const p = s.players.find(x => x.id === d.id);
+      if (p) Object.assign(p, { tag: d.tag, name: d.name, main: d.main });
+    });
+    s.dataVersion = DATA_VERSION;
+    return s;
   }
 
   // ---------- Estado ----------
@@ -594,6 +607,9 @@
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const playerById = id => state.players.find(p => p.id === id);
+  // Si no registró GamerTag se muestra su nombre tal como lo escribió.
+  const label = p => p.tag || p.name;
+  const subtitle = p => p.main || (p.tag ? p.name : 'Sin GamerTag');
   const numRounds = () => Math.log2(state.order.length);
 
   function roundName(r) {
@@ -741,7 +757,7 @@
       if (dirty || saving) return;
       if (data.state && validState(data.state)) {
         if ((data.state.updatedAt || 0) !== (state.updatedAt || 0)) {
-          state = data.state;
+          state = migrate(data.state);
           saveLocal();
           render();
         }
@@ -834,11 +850,11 @@
     else if (winner) cls += winner === pid ? ' win' : ' lose';
     if (p && ready) cls += ' pickable';
     const scoreHTML = editing && ready
-      ? `<input class="score-in" type="number" min="0" max="99" inputmode="numeric" value="${esc(score[idx])}" data-score="${r},${m},${idx}" aria-label="Marcador ${esc(p ? p.tag : '')}">`
+      ? `<input class="score-in" type="number" min="0" max="99" inputmode="numeric" value="${esc(score[idx])}" data-score="${r},${m},${idx}" aria-label="Marcador ${esc(p ? label(p) : '')}">`
       : `<span class="score">${esc(score[idx])}</span>`;
     return `<div class="${cls}" ${p && ready ? `data-pick="${r},${m},${pid}" role="button" tabindex="${editing ? 0 : -1}"` : ''}>
       <span class="seed">${p ? seedOf(pid) : ''}</span>
-      <span class="who"><span class="tag">${p ? esc(p.tag) : 'Por definir'}</span>${p && p.main ? `<span class="sub">${esc(p.main)}</span>` : (p ? `<span class="sub">${esc(p.name)}</span>` : '')}</span>
+      <span class="who"><span class="tag">${p ? esc(label(p)) : 'Por definir'}</span>${p ? `<span class="sub">${esc(subtitle(p))}</span>` : ''}</span>
       ${scoreHTML}
     </div>`;
   }
@@ -862,8 +878,8 @@
       <div class="champ" data-match="champ">
         <svg width="40" height="40" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v3h3v2a5 5 0 0 1-5 5h-.3A5 5 0 0 1 13 15.9V18h3v3H8v-3h3v-2.1A5 5 0 0 1 9.3 13H9a5 5 0 0 1-5-5V6h3V3zm10 5v3a3 3 0 0 0 1-2.2V8h-1zM6 8v.8A3 3 0 0 0 7 11V8H6z" fill="${cp ? '#ffd84a' : 'var(--line-strong)'}"/></svg>
         <div class="label">Campeón</div>
-        <div class="name ${cp ? '' : 'tbd'}">${cp ? esc(cp.tag) : '???'}</div>
-        ${cp ? `<div class="sub">${esc(cp.name)}</div>` : '<div class="sub">Por definir</div>'}
+        <div class="name ${cp ? '' : 'tbd'}">${cp ? esc(label(cp)) : '???'}</div>
+        ${cp ? `<div class="sub">${cp.tag ? esc(cp.name) : ''}</div>` : '<div class="sub">Por definir</div>'}
       </div></div></div>`;
     $('#bracket').innerHTML = html;
     requestAnimationFrame(drawLines);
@@ -905,8 +921,8 @@
       if (!p) cls += ' empty'; else if (w) cls += w === pid ? ' win' : ' lose';
       if (p && ready) cls += ' pickable';
       return `<div class="${cls}" ${p && ready ? `data-pick="${r},${m},${pid}" role="button" tabindex="${editing ? 0 : -1}"` : ''}>
-        <span class="tag">${p ? esc(p.tag) : 'Por definir'}</span>
-        <span class="sub">${p ? esc(p.main || p.name) : feederText(r, m, ps.indexOf(pid))}</span>
+        <span class="tag">${p ? esc(label(p)) : 'Por definir'}</span>
+        <span class="sub">${p ? esc(subtitle(p)) : feederText(r, m, ps.indexOf(pid))}</span>
       </div>`;
     };
     const hasScore = sc[0] !== '' || sc[1] !== '';
@@ -938,7 +954,7 @@
     forEachMatch((r, m) => { if (!winnerOf(r, m) && participants(r, m).every(Boolean)) ready.push([r, m]); });
     const ch = champion(), cp = ch && playerById(ch);
     $('#next-up').innerHTML = cp
-      ? `<h3>¡Tenemos campeón! 🏆 ${esc(cp.tag)}</h3>`
+      ? `<h3>¡Tenemos campeón! 🏆 ${esc(label(cp))}</h3>`
       : ready.length
         ? `<h3>Siguientes combates</h3><div class="rounds-grid">${ready.slice(0, 3).map(([r, m]) => vsCardHTML(r, m)).join('')}</div>`
         : '';
@@ -977,14 +993,14 @@
     const sorted = state.order.map(playerById).filter(Boolean);
     $('#players-grid').innerHTML = sorted.map(p => {
       const st = playerStatus(p.id);
-      const initials = esc((p.tag || '?').replace(/[^A-Za-z0-9ÁÉÍÓÚÑáéíóúñ]/g, '').slice(0, 2).toUpperCase() || '?');
+      const initials = esc((label(p) || '?').replace(/[^A-Za-z0-9ÁÉÍÓÚÑáéíóúñ]/g, '').slice(0, 2).toUpperCase() || '?');
       return `<div class="pcard ${st.cls}">
         <div class="avatar">${initials}</div>
         <div class="info">
           ${editing
-            ? `<input class="tag-in" data-edit="${p.id}" data-field="tag" value="${esc(p.tag)}" aria-label="GamerTag">
+            ? `<input class="tag-in" data-edit="${p.id}" data-field="tag" value="${esc(p.tag)}" placeholder="Sin GamerTag" aria-label="GamerTag">
                <input data-edit="${p.id}" data-field="main" value="${esc(p.main)}" placeholder="Personaje" aria-label="Personaje">`
-            : `<span class="tag">${esc(p.tag)}</span><span class="sub">${esc(p.name)}${p.main ? ' · ' + esc(p.main) : ''}</span>`}
+            : `<span class="tag">${esc(label(p))}</span><span class="sub">${p.tag ? esc(p.name) : 'Sin GamerTag'}${p.main ? ' · ' + esc(p.main) : ''}</span>`}
           <span class="status">#${seedOf(p.id)}${st.text ? ' · ' + esc(st.text) : ''}</span>
         </div>
       </div>`;
@@ -1031,7 +1047,6 @@
       const p = playerById(el.dataset.edit);
       if (!p) return;
       const v = el.value.trim();
-      if (el.dataset.field === 'tag' && !v) { el.value = p.tag; return; }
       p[el.dataset.field] = v;
       commit();
     }
@@ -1043,7 +1058,7 @@
 
   // ---------- Arranque ----------
   const local = loadLocal();
-  if (validState(local)) state = local;
+  if (validState(local)) state = migrate(local);
   render();
   pullRemote(true);
   setInterval(() => { if (document.visibilityState === 'visible') pullRemote(); }, 8000);
