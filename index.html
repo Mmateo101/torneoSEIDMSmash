@@ -708,6 +708,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-pin': pin },
         body: JSON.stringify({ state }),
+        keepalive: true, // permite terminar el guardado aunque se cierre la pestaña
       });
       const data = await r.json().catch(() => ({}));
       if (r.status === 401) { setSaveState('PIN inválido', 'err'); exitEdit(); askPin(); return; }
@@ -1046,7 +1047,17 @@
   render();
   pullRemote(true);
   setInterval(() => { if (document.visibilityState === 'visible') pullRemote(); }, 8000);
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') pullRemote(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') pullRemote();
+    else flushSave();
+  });
+  window.addEventListener('pagehide', flushSave);
+  // Si hay un cambio pendiente de guardar, lo envía de inmediato (al cerrar o cambiar de pestaña).
+  function flushSave() {
+    if (!remote.configured || !dirty || saving) return;
+    clearTimeout(saveTimer);
+    pushRemote();
+  }
 })();
 </script>
 </body>
