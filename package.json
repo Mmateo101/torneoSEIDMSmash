@@ -1,0 +1,10 @@
+{
+  "name": "torneo-idm-smash",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bracket interactivo del torneo de Super Smash Bros. Ultimate — Torneo E-Sports IDM II Edición",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  }
+}

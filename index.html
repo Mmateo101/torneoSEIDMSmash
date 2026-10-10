@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smash IDM · Bracket</title>
+<meta name="description" content="Bracket interactivo del torneo de Super Smash Bros. Ultimate — Torneo E-Sports IDM, II Edición.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%232b2e33'/%3E%3Crect x='34' y='0' width='9' height='100' fill='%23fff'/%3E%3Crect x='0' y='60' width='100' height='9' fill='%23fff'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #f3f4f6;
+    --surface: #ffffff;
+    --surface-2: #eceef1;
+    --line: #d4d7dc;
+    --line-strong: #b4b8bf;
+    --text: #1c1e22;
+    --muted: #6a6f78;
+    --ink: #2b2e33;
+    --ink-soft: #4a4e55;
+    --deco: #e1e4e8;
+    --deco-2: #d8dbe0;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(20, 22, 26, .06), 0 4px 14px rgba(20, 22, 26, .06);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 15px;
+    line-height: 1.45;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  button, input { font: inherit; color: inherit; }
+
+  /* ---------- Fondo Smash ---------- */
+  .bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .bg::before {
+    content: ""; position: absolute; inset: -50%;
+    background: repeating-linear-gradient(-28deg, transparent 0 46px, rgba(160, 166, 175, .07) 46px 48px);
+  }
+  .bg svg, .bg .pct { position: absolute; }
+  .bg .pct {
+    font-family: Oswald, Impact, sans-serif; font-weight: 700; font-style: italic;
+    color: transparent; -webkit-text-stroke: 2px var(--deco-2); letter-spacing: 2px; line-height: 1;
+    user-select: none;
+  }
+  .float { animation: float 9s ease-in-out infinite; }
+  .float.slow { animation-duration: 14s; }
+  .spin { animation: spin 60s linear infinite; }
+  @keyframes float { 0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); } 50% { transform: translateY(-14px) rotate(var(--r, 0deg)); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .float, .spin { animation: none; } }
+
+  /* ---------- Layout ---------- */
+  .app { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 0 16px 48px; }
+  header.top { padding: 28px 0 8px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand svg { flex: none; }
+  .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  h1 {
+    font-family: Oswald, Impact, sans-serif; font-weight: 700; text-transform: uppercase;
+    font-size: clamp(28px, 5vw, 44px); line-height: 1; margin: 2px 0 0; letter-spacing: .01em;
+  }
+  h1 em { font-style: italic; color: var(--muted); }
+  .stats { display: flex; gap: 10px; flex-wrap: wrap; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 14px; min-width: 92px; box-shadow: var(--shadow); }
+  .stat b { display: block; font-family: Oswald, sans-serif; font-size: 22px; line-height: 1.1; }
+  .stat span { font-size: 12px; color: var(--muted); }
+  .progress { height: 6px; background: var(--surface-2); border-radius: 99px; overflow: hidden; margin: 14px 0 0; border: 1px solid var(--line); }
+  .progress i { display: block; height: 100%; background: var(--ink); width: 0; transition: width .4s; }
+
+  nav.tabs { display: flex; gap: 6px; margin: 20px 0 16px; flex-wrap: wrap; align-items: center; }
+  .tab {
+    border: 1px solid var(--line); background: var(--surface); padding: 8px 16px; border-radius: 99px;
+    cursor: pointer; font-weight: 600; font-size: 14px; color: var(--ink-soft);
+  }
+  .tab:hover { border-color: var(--line-strong); }
+  .tab[aria-selected="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .spacer { flex: 1; }
+  .btn {
+    border: 1px solid var(--line-strong); background: var(--surface); padding: 8px 14px; border-radius: 8px;
+    cursor: pointer; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn:hover { background: var(--surface-2); }
+  .btn.dark { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .btn.dark:hover { background: #3a3e44; }
+  .save-state { font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+  .save-state::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--line-strong); }
+  .save-state.ok::before { background: #6f9f7a; }
+  .save-state.busy::before { background: #c4a25a; }
+  .save-state.err::before { background: #c46a5a; }
+
+  .toolbar {
+    display: none; gap: 8px; flex-wrap: wrap; align-items: center;
+    background: var(--surface); border: 1px dashed var(--line-strong); border-radius: var(--radius);
+    padding: 10px 12px; margin-bottom: 16px;
+  }
+  body.editing .toolbar { display: flex; }
+  .toolbar .hint { font-size: 13px; color: var(--muted); }
+  .notice { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--ink-soft); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: var(--ink-soft); margin-bottom: 16px; display: none; }
+  .notice.show { display: block; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ---------- Bracket ---------- */
+  .bracket-wrap { overflow-x: auto; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
+  .bracket { position: relative; display: flex; gap: 44px; min-width: 1060px; padding: 4px 4px 8px; }
+  .bracket svg.lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+  .bracket svg.lines path { fill: none; stroke: var(--line-strong); stroke-width: 2; }
+  .bracket svg.lines path.done { stroke: var(--ink); }
+  .col { flex: 1; display: flex; flex-direction: column; min-width: 180px; }
+  .col-head { text-align: center; margin-bottom: 10px; }
+  .col-head b { display: block; font-family: Oswald, sans-serif; text-transform: uppercase; font-size: 16px; letter-spacing: .04em; }
+  .col-head span { font-size: 12px; color: var(--muted); }
+  .col-body { flex: 1; display: flex; flex-direction: column; justify-content: space-around; gap: 14px; min-height: 760px; }
+
+  .match { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .match .num { position: absolute; left: -1px; top: -1px; font-size: 10px; font-weight: 700; background: var(--surface-2); color: var(--muted); padding: 1px 6px; border-bottom-right-radius: 6px; border: 1px solid var(--line); display: none; }
+  .slot {
+    display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 10px; min-height: 40px;
+    background: none; border: 0; text-align: left; cursor: default;
+  }
+  .slot + .slot { border-top: 1px solid var(--line); }
+  .slot .seed { font-size: 11px; font-weight: 700; color: var(--muted); width: 18px; text-align: right; flex: none; }
+  .slot .who { flex: 1; min-width: 0; }
+  .slot .tag { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+  .slot .sub { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+  .slot .score { font-family: Oswald, sans-serif; font-size: 18px; min-width: 22px; text-align: center; color: var(--muted); }
+  .slot.empty .tag { color: var(--line-strong); font-weight: 500; font-style: italic; }
+  .slot.win { background: var(--ink); color: #fff; }
+  .slot.win .sub, .slot.win .seed, .slot.win .score { color: #c9ccd1; }
+  .slot.lose .tag { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line-strong); }
+  body.editing .slot.pickable { cursor: pointer; }
+  body.editing .slot.pickable:hover:not(.win) { background: var(--surface-2); }
+  .score-in { width: 34px; padding: 2px 4px; text-align: center; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); color: var(--text); font-family: Oswald, sans-serif; font-size: 15px; }
+  .slot.win .score-in { background: #3a3e44; color: #fff; border-color: #5a5e66; }
+
+  .champ { background: var(--surface); border: 2px solid var(--ink); border-radius: 14px; padding: 18px 14px; text-align: center; box-shadow: var(--shadow); }
+  .champ .label { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .champ .name { font-family: Oswald, sans-serif; font-size: 26px; font-weight: 700; text-transform: uppercase; line-height: 1.1; margin-top: 6px; word-break: break-word; }
+  .champ .name.tbd { color: var(--line-strong); }
+  .champ .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* ---------- Rondas ---------- */
+  .round-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .round-tabs .tab { font-size: 13px; padding: 6px 12px; }
+  .rounds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+  .vs-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 12px; }
+  .vs-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .chip { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink-soft); text-transform: uppercase; letter-spacing: .05em; }
+  .chip.done { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .chip.wait { color: var(--muted); background: transparent; border-style: dashed; }
+  .vs-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
+  .vs-p { border: 1px solid var(--line); border-radius: 8px; padding: 10px 8px; text-align: center; background: var(--surface); min-width: 0; }
+  .vs-p .tag { font-weight: 700; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .vs-p .sub { font-size: 11px; color: var(--muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .vs-p.win { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .vs-p.win .sub { color: #c9ccd1; }
+  .vs-p.lose { opacity: .55; }
+  .vs-p.empty .tag { color: var(--line-strong); font-style: italic; font-weight: 500; }
+  body.editing .vs-p.pickable { cursor: pointer; }
+  body.editing .vs-p.pickable:hover:not(.win) { border-color: var(--ink); }
+  .vs { font-family: Oswald, sans-serif; font-style: italic; font-weight: 700; font-size: 20px; color: var(--line-strong); }
+  .vs.score { color: var(--ink); font-size: 18px; font-style: normal; }
+  .next-up { margin-bottom: 16px; }
+  .next-up h3, .section-title { font-family: Oswald, sans-serif; text-transform: uppercase; font-size: 18px; margin: 0 0 10px; letter-spacing: .03em; }
+
+  /* ---------- Participantes ---------- */
+  .players-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+  .pcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow); display: flex; gap: 10px; align-items: center; }
+  .pcard .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--line); display: grid; place-items: center; font-family: Oswald, sans-serif; font-weight: 700; color: var(--ink-soft); flex: none; }
+  .pcard.out .avatar { opacity: .5; }
+  .pcard.champion .avatar { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .pcard .info { min-width: 0; flex: 1; }
+  .pcard .tag { font-weight: 700; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pcard .sub { font-size: 12px; color: var(--muted); display: block; }
+  .pcard .status { font-size: 11px; font-weight: 600; color: var(--muted); margin-top: 2px; display: block; }
+  .pcard input { width: 100%; border: 1px solid var(--line-strong); border-radius: 6px; padding: 3px 6px; font-size: 13px; background: var(--surface); margin-top: 3px; }
+  .pcard input.tag-in { font-weight: 700; }
+
+  footer { margin-top: 36px; font-size: 12px; color: var(--muted); text-align: center; }
+
+  dialog { border: 1px solid var(--line); border-radius: 12px; padding: 20px; max-width: 340px; width: calc(100% - 32px); box-shadow: 0 20px 60px rgba(0,0,0,.18); background: var(--surface); color: var(--text); }
+  dialog::backdrop { background: rgba(30, 32, 36, .35); }
+  dialog h3 { margin: 0 0 6px; font-family: Oswald, sans-serif; text-transform: uppercase; }
+  dialog p { margin: 0 0 12px; font-size: 13px; color: var(--muted); }
+  dialog input { width: 100%; padding: 9px 10px; border: 1px solid var(--line-strong); border-radius: 8px; font-size: 16px; margin-bottom: 12px; background: var(--surface); }
+  dialog .row { display: flex; gap: 8px; justify-content: flex-end; }
+  dialog .err { color: #b0503f; font-size: 13px; min-height: 18px; margin: -6px 0 8px; }
+
+  @media (max-width: 640px) {
+    header.top { padding-top: 20px; }
+    .stat { min-width: 0; flex: 1; padding: 6px 10px; }
+    .stat b { font-size: 18px; }
+    .rounds-grid { grid-template-columns: 1fr; }
+    .players-grid { grid-template-columns: 1fr 1fr; }
+    .pcard { flex-direction: column; text-align: center; }
+    .pcard .info { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Elementos de fondo inspirados en Smash -->
+<div class="bg" aria-hidden="true">
+  <!-- Logo Smash grande -->
+  <svg class="spin" style="right:-140px; top:-120px; width:520px; height:520px" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="48" fill="var(--deco)"/>
+    <rect x="35" y="0" width="7" height="100" fill="var(--bg)"/>
+    <rect x="0" y="60" width="100" height="7" fill="var(--bg)"/>
+  </svg>
+  <!-- Smash Ball -->
+  <svg class="float" style="left:3%; top:58%; width:150px; height:150px; --r:-12deg" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="44" fill="none" stroke="var(--deco-2)" stroke-width="4"/>
+    <path d="M10 42 C 35 30, 65 30, 90 42" fill="none" stroke="var(--deco-2)" stroke-width="4"/>
+    <path d="M10 58 C 35 70, 65 70, 90 58" fill="none" stroke="var(--deco-2)" stroke-width="4"/>
+    <path d="M42 8 C 30 35, 30 65, 42 92" fill="none" stroke="var(--deco-2)" stroke-width="4"/>
+    <path d="M58 8 C 70 35, 70 65, 58 92" fill="none" stroke="var(--deco-2)" stroke-width="4"/>
+  </svg>
+  <!-- Escenario tipo Battlefield -->
+  <svg class="float slow" style="left:50%; bottom:-10px; width:640px; max-width:90vw; transform:translateX(-50%)" viewBox="0 0 320 90">
+    <rect x="70" y="10" width="54" height="7" rx="3" fill="var(--deco-2)"/>
+    <rect x="196" y="10" width="54" height="7" rx="3" fill="var(--deco-2)"/>
+    <rect x="133" y="-14" width="54" height="7" rx="3" fill="var(--deco-2)"/>
+    <path d="M30 40 H290 L262 62 Q 230 90 160 90 Q 90 90 58 62 Z" fill="var(--deco)"/>
+    <rect x="30" y="36" width="260" height="6" rx="2" fill="var(--deco-2)"/>
+  </svg>
+  <!-- Plataforma Destino Final -->
+  <svg class="float" style="right:4%; top:46%; width:220px; --r:4deg" viewBox="0 0 200 50">
+    <path d="M0 6 H200 L170 30 L100 46 L30 30 Z" fill="var(--deco)"/>
+    <rect x="0" y="2" width="200" height="5" fill="var(--deco-2)"/>
+  </svg>
+  <!-- Porcentajes de daño -->
+  <div class="pct float" style="left:2%; top:14%; font-size:110px; --r:-8deg">0%</div>
+  <div class="pct float slow" style="right:16%; top:74%; font-size:90px; --r:6deg">127%</div>
+  <div class="pct" style="left:40%; top:30%; font-size:150px; opacity:.55; transform:rotate(-6deg)">GAME!</div>
+  <!-- Stocks -->
+  <svg class="float slow" style="left:22%; top:86%; width:150px" viewBox="0 0 150 30">
+    <circle cx="15" cy="15" r="12" fill="var(--deco-2)"/><circle cx="55" cy="15" r="12" fill="var(--deco-2)"/><circle cx="95" cy="15" r="12" fill="var(--deco-2)"/>
+    <circle cx="135" cy="15" r="12" fill="none" stroke="var(--deco-2)" stroke-width="3"/>
+  </svg>
+  <!-- Estrella KO -->
+  <svg class="float" style="left:62%; top:8%; width:60px; --r:14deg" viewBox="0 0 24 24">
+    <path d="M12 1.5l3.1 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.3l-6.4 3.6 1.5-7.1L1.7 8.9l7.2-.8z" fill="var(--deco-2)"/>
+  </svg>
+  <svg class="float slow" style="left:12%; top:40%; width:34px; --r:-20deg" viewBox="0 0 24 24">
+    <path d="M12 1.5l3.1 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.3l-6.4 3.6 1.5-7.1L1.7 8.9l7.2-.8z" fill="var(--deco-2)"/>
+  </svg>
+  <!-- Mando / botones -->
+  <svg class="float" style="right:30%; top:20%; width:80px; --r:-10deg" viewBox="0 0 40 40">
+    <circle cx="20" cy="8" r="6" fill="none" stroke="var(--deco-2)" stroke-width="2.5"/>
+    <circle cx="20" cy="32" r="6" fill="none" stroke="var(--deco-2)" stroke-width="2.5"/>
+    <circle cx="8" cy="20" r="6" fill="none" stroke="var(--deco-2)" stroke-width="2.5"/>
+    <circle cx="32" cy="20" r="6" fill="var(--deco-2)"/>
+  </svg>
+</div>
+
+<div class="app">
+  <header class="top">
+    <div>
+      <div class="brand">
+        <svg width="52" height="52" viewBox="0 0 100 100" aria-hidden="true">
+          <circle cx="50" cy="50" r="48" fill="var(--ink)"/>
+          <rect x="35" y="0" width="8" height="100" fill="#fff"/>
+          <rect x="0" y="60" width="100" height="8" fill="#fff"/>
+        </svg>
+        <div>
+          <div class="eyebrow">Torneo E-Sports IDM · II Edición</div>
+          <h1>Super Smash Bros. <em>Ultimate</em></h1>
+        </div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="st-players">16</b><span>Jugadores</span></div>
+      <div class="stat"><b id="st-played">0/15</b><span>Combates</span></div>
+      <div class="stat"><b id="st-round">Octavos</b><span>Ronda</span></div>
+    </div>
+  </header>
+  <div class="progress" aria-hidden="true"><i id="progress"></i></div>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" data-view="bracket" aria-selected="true">Bracket</button>
+    <button class="tab" role="tab" data-view="rounds" aria-selected="false">Combates por ronda</button>
+    <button class="tab" role="tab" data-view="players" aria-selected="false">Participantes</button>
+    <span class="spacer"></span>
+    <span class="save-state" id="save-state">Cargando…</span>
+    <button class="btn" id="edit-toggle">Modo organizador</button>
+  </nav>
+
+  <div class="notice" id="notice"></div>
+
+  <div class="toolbar">
+    <span class="hint"><b>Modo organizador:</b> toca a un jugador para marcarlo como ganador (tócalo de nuevo para deshacer). Puedes anotar el marcador.</span>
+    <span class="spacer"></span>
+    <button class="btn" id="btn-shuffle">Sortear bracket</button>
+    <button class="btn" id="btn-reset">Reiniciar resultados</button>
+    <button class="btn dark" id="btn-exit">Salir</button>
+  </div>
+
+  <section class="view active" id="view-bracket">
+    <div class="bracket-wrap"><div class="bracket" id="bracket"></div></div>
+  </section>
+
+  <section class="view" id="view-rounds">
+    <div class="next-up" id="next-up"></div>
+    <div class="round-tabs" id="round-tabs"></div>
+    <div class="rounds-grid" id="rounds-grid"></div>
+  </section>
+
+  <section class="view" id="view-players">
+    <div class="players-grid" id="players-grid"></div>
+  </section>
+
+  <footer>Eliminación directa · 16 jugadores · Los resultados se actualizan automáticamente.</footer>
+</div>
+
+<dialog id="pin-dialog">
+  <form method="dialog" id="pin-form">
+    <h3>Modo organizador</h3>
+    <p>Ingresa el PIN para editar resultados.</p>
+    <input type="password" id="pin-input" inputmode="numeric" autocomplete="off" placeholder="PIN">
+    <div class="err" id="pin-err"></div>
+    <div class="row">
+      <button class="btn" value="cancel" type="button" id="pin-cancel">Cancelar</button>
+      <button class="btn dark" type="submit">Entrar</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(() => {
+  'use strict';
+
+  // ---------- Datos iniciales (inscripciones de Smash) ----------
+  const DEFAULT_PLAYERS = [
+    { id: 'p1',  tag: 'NXCT',          name: 'Luis Elizondo',      main: '' },
+    { id: 'p2',  tag: 'PepeElPollo27', name: 'Andrés Galland',     main: '' },
+    { id: 'p3',  tag: 'Vegettoblue86', name: 'Jaill García',       main: 'Steve' },
+    { id: 'p4',  tag: 'ImEddy013',     name: 'Ángel Aguirre',      main: 'Terry' },
+    { id: 'p5',  tag: 'Sebazzu',       name: 'Sebastián Becerra',  main: '' },
+    { id: 'p6',  tag: 'AbbytoFAN',     name: 'Hiram Miranda',      main: '' },
+    { id: 'p7',  tag: 'TheRoman',      name: 'César Castillo',     main: '' },
+    { id: 'p8',  tag: 'Juan_rv',       name: 'Juan Antonio Rivera', main: 'Steve' },
+    { id: 'p9',  tag: 'Alpro0204',     name: 'Aldo Contreras',     main: '' },
+    { id: 'p10', tag: 'RW',            name: 'Ricardo Willis',     main: 'Varios' },
+    { id: 'p11', tag: 'Alejandro R.',  name: 'Alejandro Rodríguez', main: '' },
+    { id: 'p12', tag: 'weird_dude586', name: 'Braulio García',     main: '' },
+    { id: 'p13', tag: 'Sm07',          name: 'Marco Rebolledo',    main: 'Sephiroth, Terry' },
+    { id: 'p14', tag: 'J-Butcher',     name: 'Jaime Barraza',      main: 'Terry' },
+    { id: 'p15', tag: 'MF2150',        name: 'Diego Gael Flores',  main: 'Hero' },
+    { id: 'p16', tag: 'Mein_Armonia',  name: 'Gonzalo Esparza',    main: '' },
+  ];
+
+  const LOCAL_KEY = 'torneo-idm-smash:state';
+  const PIN_KEY = 'torneo-idm-smash:pin';
+
+  // Sorteo reproducible para el bracket inicial.
+  function seededShuffle(arr, seed) {
+    const a = arr.slice();
+    let t = seed >>> 0;
+    const rand = () => { t += 0x6D2B79F5; let r = Math.imul(t ^ (t >>> 15), 1 | t); r ^= r + Math.imul(r ^ (r >>> 7), 61 | r); return ((r ^ (r >>> 14)) >>> 0) / 4294967296; };
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
+  function randomShuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
+  function defaultState() {
+    return {
+      players: DEFAULT_PLAYERS.map(p => ({ ...p })),
+      order: seededShuffle(DEFAULT_PLAYERS.map(p => p.id), 2026),
+      results: {},
+      updatedAt: 0,
+    };
+  }
+
+  // ---------- Estado ----------
+  let state = defaultState();
+  let remote = { configured: false, pinRequired: false, reachable: false };
+  let editing = false;
+  let pin = '';
+  try { pin = localStorage.getItem(PIN_KEY) || ''; } catch {}
+  let saveTimer = null, saving = false, dirty = false;
+  let roundFilter = null, roundPicked = false;
+
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const playerById = id => state.players.find(p => p.id === id);
+  const numRounds = () => Math.log2(state.order.length);
+
+  function roundName(r) {
+    const left = state.order.length >> r; // jugadores en esa ronda
+    if (left === 2) return 'Gran Final';
+    if (left === 4) return 'Semifinales';
+    if (left === 8) return 'Cuartos de final';
+    if (left === 16) return 'Octavos de final';
+    return `Ronda de ${left}`;
+  }
+  function roundShort(r) {
+    const left = state.order.length >> r;
+    return { 2: 'Final', 4: 'Semis', 8: 'Cuartos', 16: 'Octavos' }[left] || `R${r + 1}`;
+  }
+  const matchId = (r, m) => `${r}-${m}`;
+  function matchNumber(r, m) {
+    let n = 0;
+    for (let i = 0; i < r; i++) n += state.order.length >> (i + 1);
+    return n + m + 1;
+  }
+
+  // Jugadores de un combate, derivados del orden inicial y los ganadores previos.
+  function participants(r, m) {
+    if (r === 0) return [state.order[2 * m] || null, state.order[2 * m + 1] || null];
+    return [winnerOf(r - 1, 2 * m), winnerOf(r - 1, 2 * m + 1)];
+  }
+  function winnerOf(r, m) {
+    const res = state.results[matchId(r, m)];
+    if (!res || !res.w) return null;
+    const ps = participants(r, m);
+    return ps.includes(res.w) ? res.w : null;
+  }
+  // Elimina ganadores que ya no son válidos (p. ej. tras deshacer una ronda anterior).
+  function prune() {
+    for (let r = 0; r < numRounds(); r++) {
+      const count = state.order.length >> (r + 1);
+      for (let m = 0; m < count; m++) {
+        const id = matchId(r, m), res = state.results[id];
+        if (res && res.w && !participants(r, m).includes(res.w)) {
+          delete state.results[id];
+        }
+      }
+    }
+  }
+  function forEachMatch(fn) {
+    for (let r = 0; r < numRounds(); r++) {
+      const count = state.order.length >> (r + 1);
+      for (let m = 0; m < count; m++) fn(r, m);
+    }
+  }
+  function champion() { return winnerOf(numRounds() - 1, 0); }
+
+  function setWinner(r, m, pid) {
+    if (!editing || !pid) return;
+    const ps = participants(r, m);
+    if (!ps[0] || !ps[1]) return;
+    const id = matchId(r, m);
+    const res = state.results[id] || {};
+    if (res.w === pid) delete res.w; else res.w = pid;
+    if (!res.w && !res.s) delete state.results[id]; else state.results[id] = res;
+    prune();
+    commit();
+  }
+  function setScore(r, m, idx, val) {
+    const id = matchId(r, m);
+    const res = state.results[id] || {};
+    const s = Array.isArray(res.s) ? res.s.slice() : ['', ''];
+    s[idx] = val === '' ? '' : Math.max(0, Math.min(99, parseInt(val, 10) || 0));
+    res.s = (s[0] === '' && s[1] === '') ? undefined : s;
+    if (!res.s) delete res.s;
+    if (!res.w && !res.s) delete state.results[id]; else state.results[id] = res;
+    commit(false);
+  }
+  function scoreOf(r, m) {
+    const res = state.results[matchId(r, m)];
+    return res && Array.isArray(res.s) ? res.s : ['', ''];
+  }
+
+  // ---------- Persistencia ----------
+  function saveLocal() { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(state)); } catch {} }
+  function loadLocal() {
+    try { const raw = localStorage.getItem(LOCAL_KEY); return raw ? JSON.parse(raw) : null; } catch { return null; }
+  }
+  function validState(s) {
+    return s && Array.isArray(s.players) && Array.isArray(s.order) && s.results && typeof s.results === 'object'
+      && s.order.length >= 2 && (s.order.length & (s.order.length - 1)) === 0;
+  }
+
+  function setSaveState(text, cls) {
+    const el = $('#save-state');
+    el.textContent = text;
+    el.className = 'save-state ' + (cls || '');
+  }
+
+  function commit(rerender = true) {
+    state.updatedAt = Date.now();
+    saveLocal();
+    if (rerender) render(); else renderStats();
+    if (remote.configured) {
+      dirty = true;
+      setSaveState('Guardando…', 'busy');
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(pushRemote, 450);
+    }
+  }
+
+  async function pushRemote() {
+    if (saving) { saveTimer = setTimeout(pushRemote, 300); return; }
+    saving = true; dirty = false;
+    try {
+      const r = await fetch('/api/state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-pin': pin },
+        body: JSON.stringify({ state }),
+      });
+      const data = await r.json().catch(() => ({}));
+      if (r.status === 401) { setSaveState('PIN inválido', 'err'); exitEdit(); askPin(); return; }
+      if (!r.ok) throw new Error(data.error || r.status);
+      if (!dirty) state.updatedAt = data.updatedAt;
+      saveLocal();
+      setSaveState('Guardado en línea', 'ok');
+    } catch (e) {
+      setSaveState('Error al guardar — reintentando', 'err');
+      dirty = true;
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(pushRemote, 4000);
+    } finally {
+      saving = false;
+    }
+  }
+
+  async function pullRemote(initial = false) {
+    try {
+      const r = await fetch('/api/state', { cache: 'no-store' });
+      if (!r.ok) throw new Error(r.status);
+      const data = await r.json();
+      remote = { configured: !!data.configured, pinRequired: !!data.pinRequired, reachable: true };
+      if (!remote.configured) {
+        setSaveState('Solo en este navegador', '');
+        showNotice('El almacenamiento en línea aún no está configurado: los cambios se guardan solo en este navegador. Conecta Upstash Redis en Vercel para que se compartan (ver README).');
+        return;
+      }
+      showNotice('');
+      if (dirty || saving) return;
+      if (data.state && validState(data.state)) {
+        if ((data.state.updatedAt || 0) !== (state.updatedAt || 0)) {
+          state = data.state;
+          saveLocal();
+          render();
+        }
+        setSaveState('Sincronizado', 'ok');
+      } else if (initial) {
+        setSaveState('Sincronizado', 'ok');
+      }
+    } catch {
+      remote.reachable = false;
+      setSaveState(initial ? 'Modo local' : 'Sin conexión', initial ? '' : 'err');
+    }
+  }
+
+  function showNotice(text) {
+    const el = $('#notice');
+    el.textContent = text;
+    el.classList.toggle('show', !!text);
+  }
+
+  // ---------- Modo organizador ----------
+  function enterEdit() { editing = true; document.body.classList.add('editing'); $('#edit-toggle').textContent = 'Editando…'; render(); }
+  function exitEdit() { editing = false; document.body.classList.remove('editing'); $('#edit-toggle').textContent = 'Modo organizador'; render(); }
+
+  async function checkPin(candidate) {
+    const r = await fetch('/api/state', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-pin': candidate }, body: JSON.stringify({ check: true }) });
+    return r.ok;
+  }
+  function askPin() {
+    const dlg = $('#pin-dialog');
+    $('#pin-input').value = '';
+    $('#pin-err').textContent = '';
+    dlg.showModal();
+    setTimeout(() => $('#pin-input').focus(), 30);
+  }
+  $('#pin-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const candidate = $('#pin-input').value.trim();
+    if (!candidate) return;
+    try {
+      if (await checkPin(candidate)) {
+        pin = candidate;
+        try { localStorage.setItem(PIN_KEY, pin); } catch {}
+        $('#pin-dialog').close();
+        enterEdit();
+      } else {
+        $('#pin-err').textContent = 'PIN incorrecto';
+      }
+    } catch { $('#pin-err').textContent = 'No se pudo verificar el PIN'; }
+  });
+  $('#pin-cancel').addEventListener('click', () => $('#pin-dialog').close());
+
+  $('#edit-toggle').addEventListener('click', async () => {
+    if (editing) return exitEdit();
+    if (remote.configured && remote.pinRequired) {
+      if (pin && await checkPin(pin).catch(() => false)) return enterEdit();
+      return askPin();
+    }
+    enterEdit();
+  });
+  $('#btn-exit').addEventListener('click', exitEdit);
+  $('#btn-shuffle').addEventListener('click', () => {
+    const played = Object.values(state.results).some(r => r.w);
+    if (played && !confirm('Ya hay resultados. ¿Sortear de nuevo y borrar todos los resultados?')) return;
+    if (!played && !confirm('¿Sortear un nuevo orden de enfrentamientos?')) return;
+    state.order = randomShuffle(state.order);
+    state.results = {};
+    commit();
+  });
+  $('#btn-reset').addEventListener('click', () => {
+    if (!confirm('¿Borrar todos los resultados? El orden del bracket se mantiene.')) return;
+    state.results = {};
+    commit();
+  });
+
+  // ---------- Tabs ----------
+  document.querySelectorAll('nav.tabs .tab').forEach(btn => btn.addEventListener('click', () => {
+    document.querySelectorAll('nav.tabs .tab').forEach(b => b.setAttribute('aria-selected', String(b === btn)));
+    document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + btn.dataset.view));
+    if (btn.dataset.view === 'bracket') requestAnimationFrame(drawLines);
+  }));
+
+  // ---------- Render ----------
+  function seedOf(pid) { return state.order.indexOf(pid) + 1; }
+
+  function slotHTML(r, m, idx, pid, winner, score) {
+    const p = pid && playerById(pid);
+    const ready = participants(r, m).every(Boolean);
+    let cls = 'slot';
+    if (!p) cls += ' empty';
+    else if (winner) cls += winner === pid ? ' win' : ' lose';
+    if (p && ready) cls += ' pickable';
+    const scoreHTML = editing && ready
+      ? `<input class="score-in" type="number" min="0" max="99" inputmode="numeric" value="${esc(score[idx])}" data-score="${r},${m},${idx}" aria-label="Marcador ${esc(p ? p.tag : '')}">`
+      : `<span class="score">${esc(score[idx])}</span>`;
+    return `<div class="${cls}" ${p && ready ? `data-pick="${r},${m},${pid}" role="button" tabindex="${editing ? 0 : -1}"` : ''}>
+      <span class="seed">${p ? seedOf(pid) : ''}</span>
+      <span class="who"><span class="tag">${p ? esc(p.tag) : 'Por definir'}</span>${p && p.main ? `<span class="sub">${esc(p.main)}</span>` : (p ? `<span class="sub">${esc(p.name)}</span>` : '')}</span>
+      ${scoreHTML}
+    </div>`;
+  }
+
+  function renderBracket() {
+    const R = numRounds();
+    let html = '<svg class="lines" id="lines"></svg>';
+    for (let r = 0; r < R; r++) {
+      const count = state.order.length >> (r + 1);
+      html += `<div class="col"><div class="col-head"><b>${roundName(r)}</b><span>${count} combate${count > 1 ? 's' : ''}</span></div><div class="col-body">`;
+      for (let m = 0; m < count; m++) {
+        const ps = participants(r, m), w = winnerOf(r, m), sc = scoreOf(r, m);
+        html += `<div class="match" data-match="${r}-${m}" title="Combate ${matchNumber(r, m)}">
+          ${slotHTML(r, m, 0, ps[0], w, sc)}${slotHTML(r, m, 1, ps[1], w, sc)}
+        </div>`;
+      }
+      html += '</div></div>';
+    }
+    const ch = champion(), cp = ch && playerById(ch);
+    html += `<div class="col"><div class="col-head"><b>Campeón</b><span>&nbsp;</span></div><div class="col-body">
+      <div class="champ" data-match="champ">
+        <svg width="40" height="40" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v3h3v2a5 5 0 0 1-5 5h-.3A5 5 0 0 1 13 15.9V18h3v3H8v-3h3v-2.1A5 5 0 0 1 9.3 13H9a5 5 0 0 1-5-5V6h3V3zm10 5v3a3 3 0 0 0 1-2.2V8h-1zM6 8v.8A3 3 0 0 0 7 11V8H6z" fill="${cp ? 'var(--ink)' : 'var(--line-strong)'}"/></svg>
+        <div class="label">Campeón</div>
+        <div class="name ${cp ? '' : 'tbd'}">${cp ? esc(cp.tag) : '???'}</div>
+        ${cp ? `<div class="sub">${esc(cp.name)}</div>` : '<div class="sub">Por definir</div>'}
+      </div></div></div>`;
+    $('#bracket').innerHTML = html;
+    requestAnimationFrame(drawLines);
+  }
+
+  function drawLines() {
+    const host = $('#bracket'), svg = $('#lines');
+    if (!host || !svg || !host.offsetParent) return;
+    const base = host.getBoundingClientRect();
+    const rect = el => { const b = el.getBoundingClientRect(); return { l: b.left - base.left, r: b.right - base.left, cy: b.top - base.top + b.height / 2 }; };
+    const R = numRounds();
+    let d = '';
+    for (let r = 1; r <= R; r++) {
+      const count = r < R ? state.order.length >> (r + 1) : 1;
+      for (let m = 0; m < count; m++) {
+        const target = r < R ? host.querySelector(`[data-match="${r}-${m}"]`) : host.querySelector('[data-match="champ"]');
+        const feeders = r < R ? [2 * m, 2 * m + 1] : [0];
+        if (!target) continue;
+        const t = rect(target);
+        feeders.forEach(fm => {
+          const src = host.querySelector(`[data-match="${r - 1}-${fm}"]`);
+          if (!src) return;
+          const s = rect(src);
+          const mid = s.r + (t.l - s.r) / 2;
+          const done = !!winnerOf(r - 1, fm);
+          d += `<path class="${done ? 'done' : ''}" d="M${s.r} ${s.cy} H${mid} V${t.cy} H${t.l}"/>`;
+        });
+      }
+    }
+    svg.innerHTML = d;
+  }
+
+  function vsCardHTML(r, m) {
+    const ps = participants(r, m), w = winnerOf(r, m), sc = scoreOf(r, m);
+    const ready = ps.every(Boolean);
+    const side = pid => {
+      const p = pid && playerById(pid);
+      let cls = 'vs-p';
+      if (!p) cls += ' empty'; else if (w) cls += w === pid ? ' win' : ' lose';
+      if (p && ready) cls += ' pickable';
+      return `<div class="${cls}" ${p && ready ? `data-pick="${r},${m},${pid}" role="button" tabindex="${editing ? 0 : -1}"` : ''}>
+        <span class="tag">${p ? esc(p.tag) : 'Por definir'}</span>
+        <span class="sub">${p ? esc(p.main || p.name) : feederText(r, m, ps.indexOf(pid))}</span>
+      </div>`;
+    };
+    const hasScore = sc[0] !== '' || sc[1] !== '';
+    const status = w ? '<span class="chip done">Terminado</span>' : ready ? '<span class="chip">Por jugar</span>' : '<span class="chip wait">En espera</span>';
+    return `<div class="vs-card">
+      <div class="vs-head"><span>Combate ${matchNumber(r, m)} · ${roundShort(r)}</span>${status}</div>
+      <div class="vs-row">${side(ps[0])}<span class="vs ${hasScore ? 'score' : ''}">${hasScore ? `${esc(sc[0] === '' ? 0 : sc[0])} – ${esc(sc[1] === '' ? 0 : sc[1])}` : 'VS'}</span>${side(ps[1])}</div>
+    </div>`;
+  }
+  function feederText(r, m, idx) {
+    if (r === 0) return '';
+    const fm = 2 * m + (idx < 0 ? 0 : idx);
+    return `Ganador combate ${matchNumber(r - 1, fm)}`;
+  }
+
+  function currentRound() {
+    for (let r = 0; r < numRounds(); r++) {
+      const count = state.order.length >> (r + 1);
+      for (let m = 0; m < count; m++) if (!winnerOf(r, m)) return r;
+    }
+    return null;
+  }
+
+  function renderRounds() {
+    const R = numRounds(), cur = currentRound();
+    if (!roundPicked || roundFilter === null || roundFilter >= R) roundFilter = cur ?? R - 1;
+    // Próximos combates listos para jugarse
+    const ready = [];
+    forEachMatch((r, m) => { if (!winnerOf(r, m) && participants(r, m).every(Boolean)) ready.push([r, m]); });
+    const ch = champion(), cp = ch && playerById(ch);
+    $('#next-up').innerHTML = cp
+      ? `<h3>¡Tenemos campeón! 🏆 ${esc(cp.tag)}</h3>`
+      : ready.length
+        ? `<h3>Siguientes combates</h3><div class="rounds-grid">${ready.slice(0, 3).map(([r, m]) => vsCardHTML(r, m)).join('')}</div>`
+        : '';
+    let tabs = '';
+    for (let r = 0; r < R; r++) tabs += `<button class="tab" data-round="${r}" aria-selected="${r === roundFilter}">${roundName(r)}</button>`;
+    $('#round-tabs').innerHTML = tabs;
+    const count = state.order.length >> (roundFilter + 1);
+    let cards = '';
+    for (let m = 0; m < count; m++) cards += vsCardHTML(roundFilter, m);
+    $('#rounds-grid').innerHTML = cards;
+  }
+  $('#round-tabs').addEventListener('click', e => {
+    const b = e.target.closest('[data-round]');
+    if (!b) return;
+    roundFilter = +b.dataset.round;
+    roundPicked = true;
+    renderRounds();
+  });
+
+  function playerStatus(pid) {
+    if (champion() === pid) return { cls: 'champion', text: '🏆 Campeón' };
+    let lastRound = -1, eliminated = null;
+    forEachMatch((r, m) => {
+      const ps = participants(r, m);
+      if (!ps.includes(pid)) return;
+      lastRound = r;
+      const w = winnerOf(r, m);
+      if (w && w !== pid) eliminated = r;
+    });
+    if (eliminated !== null) return { cls: 'out', text: `Eliminado en ${roundName(eliminated).toLowerCase()}` };
+    if (lastRound >= 0) return { cls: '', text: `En ${roundName(lastRound).toLowerCase()}` };
+    return { cls: '', text: '' };
+  }
+
+  function renderPlayers() {
+    const sorted = state.order.map(playerById).filter(Boolean);
+    $('#players-grid').innerHTML = sorted.map(p => {
+      const st = playerStatus(p.id);
+      const initials = esc((p.tag || '?').replace(/[^A-Za-z0-9ÁÉÍÓÚÑáéíóúñ]/g, '').slice(0, 2).toUpperCase() || '?');
+      return `<div class="pcard ${st.cls}">
+        <div class="avatar">${initials}</div>
+        <div class="info">
+          ${editing
+            ? `<input class="tag-in" data-edit="${p.id}" data-field="tag" value="${esc(p.tag)}" aria-label="GamerTag">
+               <input data-edit="${p.id}" data-field="main" value="${esc(p.main)}" placeholder="Personaje" aria-label="Personaje">`
+            : `<span class="tag">${esc(p.tag)}</span><span class="sub">${esc(p.name)}${p.main ? ' · ' + esc(p.main) : ''}</span>`}
+          <span class="status">#${seedOf(p.id)}${st.text ? ' · ' + esc(st.text) : ''}</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderStats() {
+    let total = 0, played = 0;
+    forEachMatch((r, m) => { total++; if (winnerOf(r, m)) played++; });
+    $('#st-players').textContent = state.players.length;
+    $('#st-played').textContent = `${played}/${total}`;
+    const cur = currentRound();
+    $('#st-round').textContent = cur === null ? 'Terminado' : roundShort(cur);
+    $('#progress').style.width = (total ? (played / total) * 100 : 0) + '%';
+  }
+
+  function render() {
+    renderStats();
+    renderBracket();
+    renderRounds();
+    renderPlayers();
+  }
+
+  // ---------- Interacción ----------
+  function handlePick(e) {
+    if (!editing) return;
+    if (e.target.closest('input')) return;
+    const el = e.target.closest('[data-pick]');
+    if (!el) return;
+    const [r, m, pid] = el.dataset.pick.split(',');
+    setWinner(+r, +m, pid);
+  }
+  document.addEventListener('click', handlePick);
+  document.addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('[data-pick]')) { e.preventDefault(); handlePick(e); }
+  });
+  document.addEventListener('change', e => {
+    const el = e.target;
+    if (el.dataset.score) {
+      const [r, m, idx] = el.dataset.score.split(',').map(Number);
+      setScore(r, m, idx, el.value);
+      renderRounds();
+    } else if (el.dataset.edit) {
+      const p = playerById(el.dataset.edit);
+      if (!p) return;
+      const v = el.value.trim();
+      if (el.dataset.field === 'tag' && !v) { el.value = p.tag; return; }
+      p[el.dataset.field] = v;
+      commit();
+    }
+  });
+
+  let resizeRaf;
+  window.addEventListener('resize', () => { cancelAnimationFrame(resizeRaf); resizeRaf = requestAnimationFrame(drawLines); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawLines);
+
+  // ---------- Arranque ----------
+  const local = loadLocal();
+  if (validState(local)) state = local;
+  render();
+  pullRemote(true);
+  setInterval(() => { if (document.visibilityState === 'visible') pullRemote(); }, 8000);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') pullRemote(); });
+})();
+</script>
+</body>
+</html>
