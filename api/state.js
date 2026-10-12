@@ -1,8 +1,12 @@
-// Persistencia compartida del bracket en Upstash Redis (integración de Vercel Marketplace).
+// Persistencia compartida de los torneos en Upstash Redis (integración de Vercel Marketplace).
 // Variables de entorno: KV_REST_API_URL + KV_REST_API_TOKEN (o UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN).
 // Opcional: ADMIN_PIN — si existe, solo quien lo conozca puede guardar cambios.
+// Cada juego se guarda por separado: /api/state (Smash) y /api/state?game=mk (Mario Kart).
 
-const KEY = 'torneo-idm-smash:bracket';
+const KEYS = {
+  smash: 'torneo-idm-smash:bracket',
+  mk: 'torneo-idm-smash:mariokart',
+};
 const MAX_BYTES = 200_000;
 
 function config() {
@@ -23,13 +27,15 @@ async function redis({ url, token }, command) {
   return (await r.json()).result;
 }
 
-function isValidState(s) {
-  return (
-    s && typeof s === 'object' &&
+const isObject = v => v && typeof v === 'object' && !Array.isArray(v);
+
+function isValidState(game, s) {
+  const base = isObject(s) &&
     Array.isArray(s.players) && s.players.length <= 128 &&
-    Array.isArray(s.order) && s.order.length <= 128 &&
-    s.results && typeof s.results === 'object' && !Array.isArray(s.results)
-  );
+    Array.isArray(s.order) && s.order.length <= 128;
+  if (!base) return false;
+  if (game === 'mk') return isObject(s.config) && isObject(s.scores);
+  return isObject(s.results);
 }
 
 export default async function handler(req, res) {
@@ -37,11 +43,14 @@ export default async function handler(req, res) {
   const cfg = config();
   const configured = Boolean(cfg.url && cfg.token);
   const pinRequired = Boolean(cfg.pin);
+  const game = new URL(req.url, 'http://localhost').searchParams.get('game') || 'smash';
+  const key = KEYS[game];
+  if (!key) return res.status(400).json({ error: 'Juego desconocido' });
 
   try {
     if (req.method === 'GET') {
       if (!configured) return res.status(200).json({ configured, pinRequired, state: null });
-      const raw = await redis(cfg, ['GET', KEY]);
+      const raw = await redis(cfg, ['GET', key]);
       return res.status(200).json({ configured, pinRequired, state: raw ? JSON.parse(raw) : null });
     }
 
@@ -55,12 +64,12 @@ export default async function handler(req, res) {
       if (!configured) return res.status(503).json({ error: 'Almacenamiento no configurado' });
 
       const state = body && body.state;
-      if (!isValidState(state)) return res.status(400).json({ error: 'Estado inválido' });
+      if (!isValidState(game, state)) return res.status(400).json({ error: 'Estado inválido' });
       state.updatedAt = Date.now();
       const raw = JSON.stringify(state);
       if (raw.length > MAX_BYTES) return res.status(413).json({ error: 'Estado demasiado grande' });
 
-      await redis(cfg, ['SET', KEY, raw]);
+      await redis(cfg, ['SET', key, raw]);
       return res.status(200).json({ ok: true, updatedAt: state.updatedAt });
     }
 

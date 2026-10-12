@@ -115,12 +115,17 @@
     text-shadow: 0 0 4px rgba(255, 255, 255, .8), 0 0 14px var(--neon), 0 0 34px rgba(255, 95, 224, .75), 0 0 70px rgba(164, 107, 255, .7);
   }
   h1 span { display: inline-block; margin-right: .18em; }
+  .game-switch { display: flex; gap: 8px; flex-wrap: wrap; }
   .game-pill {
+    border: 0; cursor: pointer; transition: background .15s, box-shadow .15s, color .15s;
     display: inline-flex; align-items: center; gap: 8px;
     background: var(--pill); color: var(--pill-ink); border-radius: 99px; padding: 7px 18px 7px 8px;
     font-family: Poppins, sans-serif; font-weight: 700; font-size: 15px;
     box-shadow: 0 0 18px rgba(127, 200, 255, .6);
   }
+  .game-pill[aria-pressed="false"] { background: rgba(255, 255, 255, .1); color: #e8e4ff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25); }
+  .game-pill[aria-pressed="false"]:hover { background: rgba(255, 255, 255, .2); }
+  .game-pill[aria-pressed="false"] svg { opacity: .75; }
   .stats { display: flex; gap: 10px; flex-wrap: wrap; }
   .stat {
     background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .16);
@@ -207,6 +212,46 @@
   .champ .name.tbd { color: var(--line-strong); }
   .champ .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
+  /* ---------- Mario Kart ---------- */
+  .mk-plan { margin: 0 0 16px; color: var(--muted); font-size: 13px; }
+  .mk-config { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 18px; box-shadow: var(--shadow); }
+  .mk-config label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
+  .mk-config input { width: 110px; padding: 6px 8px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface-2); color: var(--text); font-family: Anton, Impact, sans-serif; font-size: 18px; }
+  .mk-config .plan { flex: 1; min-width: 240px; font-size: 13px; color: var(--ink-soft); }
+  .mk-round { margin-bottom: 26px; }
+  .mk-round-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .mk-round-head b { font-family: Anton, Impact, sans-serif; font-weight: 400; font-size: 22px; text-transform: uppercase; letter-spacing: .03em; text-shadow: 0 0 12px rgba(255, 95, 224, .7); }
+  .mk-round-head span { font-size: 13px; color: var(--muted); }
+  .mk-groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .mk-group { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .mk-group-head { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; font-size: 13px; }
+  .mk-group-head b { font-family: Anton, Impact, sans-serif; font-weight: 400; font-size: 16px; letter-spacing: .04em; text-transform: uppercase; }
+  .chip { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink-soft); text-transform: uppercase; letter-spacing: .05em; }
+  .chip.done { background: var(--win); color: #fff; border-color: transparent; }
+  .chip.wait { color: var(--muted); background: transparent; border-style: dashed; }
+  .chip.tie { background: #ffd04a; color: #3a2a00; border-color: transparent; }
+  .mk-row { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--line); min-height: 44px; }
+  .mk-row .pos { width: 16px; font-size: 12px; font-weight: 700; color: var(--muted); text-align: right; flex: none; }
+  .mk-row .who { flex: 1; min-width: 0; }
+  .mk-row .tag { font-weight: 700; display: block; overflow-wrap: anywhere; line-height: 1.25; }
+  .mk-row .sub { font-size: 11px; line-height: 1.3; color: var(--muted); display: block; overflow-wrap: anywhere; }
+  .mk-row .pts { font-family: Anton, Impact, sans-serif; font-size: 20px; min-width: 34px; text-align: right; }
+  .mk-row.q { background: var(--win); color: #fff; }
+  .mk-row.q .sub, .mk-row.q .pos { color: #ffe1f7; }
+  .mk-row.q .score-in { background: rgba(20, 10, 60, .35); color: #fff; border-color: rgba(255, 255, 255, .45); }
+  .mk-row.out .tag { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line-strong); }
+  .mk-row.tie { box-shadow: inset 3px 0 0 #ffd04a; }
+  .mk-row.empty .tag { color: var(--line-strong); font-style: italic; font-weight: 500; }
+  .mk-row .badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 2px 7px; border-radius: 99px; background: rgba(255, 255, 255, .22); }
+  .mk-row .score-in { width: 52px; }
+  .mk-row .tb-line { display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 11px; font-weight: 700; color: #ffd04a; }
+  .mk-row.q .tb-line { color: #fff3c4; }
+  .mk-row .tb-in { width: 44px; font-size: 13px; padding: 1px 4px; border-color: #ffd04a; }
+  .tie-note { font-size: 12px; color: #ffd04a; padding: 8px 12px; border-top: 1px dashed rgba(255, 208, 74, .5); }
+  .mk-final { display: flex; gap: 28px; align-items: center; flex-wrap: wrap; }
+  .mk-final .match { width: min(100%, 320px); }
+  .mk-final .champ { width: min(100%, 240px); }
+
   /* ---------- Participantes ---------- */
   .players-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
   .pcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow); display: flex; gap: 10px; align-items: center; }
@@ -254,14 +299,20 @@
       <div>
         <div class="edition">2<sup>a</sup> Edición</div>
         <h1><span>Torneo</span><span>E-Sports</span><span>IDM</span></h1>
-        <div class="game-pill">
-          <svg width="26" height="26" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="48" fill="#1d1d5c"/><rect x="35" y="0" width="8" height="100" fill="#c7e6ff"/><rect x="0" y="60" width="100" height="8" fill="#c7e6ff"/></svg>
-          Super Smash Bros. Ultimate
+        <div class="game-switch" role="group" aria-label="Elegir juego">
+          <button class="game-pill" type="button" data-game="smash" aria-pressed="true">
+            <svg width="26" height="26" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="48" fill="#1d1d5c"/><rect x="35" y="0" width="8" height="100" fill="#c7e6ff"/><rect x="0" y="60" width="100" height="8" fill="#c7e6ff"/></svg>
+            Super Smash Bros. Ultimate
+          </button>
+          <button class="game-pill" type="button" data-game="mk" aria-pressed="false">
+            <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#1d1d5c"/><circle cx="12" cy="12" r="7.5" fill="none" stroke="#c7e6ff" stroke-width="2.2"/><circle cx="12" cy="12" r="2" fill="#c7e6ff"/><path d="M4.6 10.5h5.6M13.8 10.5h5.6M12 14v5.5" stroke="#c7e6ff" stroke-width="2.2"/></svg>
+            Mario Kart
+          </button>
         </div>
       </div>
       <div class="stats">
         <div class="stat"><b id="st-players">16</b><span>Jugadores</span></div>
-        <div class="stat"><b id="st-played">0/15</b><span>Combates</span></div>
+        <div class="stat"><b id="st-played">0/15</b><span id="st-played-label">Combates</span></div>
         <div class="stat"><b id="st-round">Octavos</b><span>Ronda</span></div>
       </div>
     </div>
@@ -269,7 +320,7 @@
   </header>
 
   <nav class="tabs" role="tablist">
-    <button class="tab" role="tab" data-view="bracket" aria-selected="true">Bracket</button>
+    <button class="tab" role="tab" data-view="bracket" aria-selected="true" id="tab-main">Bracket</button>
     <button class="tab" role="tab" data-view="players" aria-selected="false">Participantes</button>
     <span class="spacer"></span>
     <span class="save-state" id="save-state">Cargando…</span>
@@ -279,20 +330,21 @@
   <div class="notice" id="notice"></div>
 
   <div class="toolbar">
-    <span class="hint">Escribe los puntos de cada jugador. <b>El que tenga más puntos pasa automáticamente a la siguiente ronda.</b> Si borras o cambias un marcador, el bracket se corrige solo.</span>
+    <span class="hint" id="toolbar-hint"></span>
     <span class="spacer"></span>
     <button class="btn" id="btn-reset">Borrar todos los resultados</button>
   </div>
 
   <section class="view active" id="view-bracket">
-    <div class="bracket-wrap"><div class="bracket" id="bracket"></div></div>
+    <div class="bracket-wrap" id="bracket-wrap"><div class="bracket" id="bracket"></div></div>
+    <div id="mk-view" hidden></div>
   </section>
 
   <section class="view" id="view-players">
     <div class="players-grid" id="players-grid"></div>
   </section>
 
-  <footer>Eliminación directa · 16 jugadores · Los resultados se actualizan automáticamente.</footer>
+  <footer id="footer-text"></footer>
 </div>
 
 <dialog id="pin-dialog">
@@ -564,7 +616,6 @@
   let editing = false;
   let pin = '';
   try { pin = localStorage.getItem(PIN_KEY) || ''; } catch {}
-  let saveTimer = null, saving = false, dirty = false;
 
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -644,10 +695,143 @@
     return res && Array.isArray(res.s) ? res.s : ['', ''];
   }
 
-  // ---------- Persistencia ----------
-  function saveLocal() { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(state)); } catch {} }
-  function loadLocal() {
-    try { const raw = localStorage.getItem(LOCAL_KEY); return raw ? JSON.parse(raw) : null; } catch { return null; }
+  // ======================================================================
+  // ---------- Mario Kart: grupos por puntos + final 1 vs 1 ----------
+  // ======================================================================
+  const MK_PLAYERS = [
+    { id: 'm1', tag: "Thomasitop", name: "Antonio Vences Rossell" },
+    { id: 'm2', tag: "DrWaza", name: "Pedro Eduardo De Leon Jr" },
+    { id: 'm3', tag: "alvarozepedaa", name: "Álvaro Santiago Zepeda López" },
+    { id: 'm4', tag: "Pauxl_15", name: "Paúl Alexander Calderón Pilla" },
+    { id: 'm5', tag: "", name: "diego anaya hernandez" },
+    { id: 'm6', tag: "Arigame9000", name: "Ari José De León Durán" },
+    { id: 'm7', tag: "Blackwidow9000", name: "Fernanda Michelle Garcia Arriaga" },
+    { id: 'm8', tag: "J-Butcher", name: "Jaime Barraza" },
+    { id: 'm9', tag: "AbbytoFAN", name: "Hiram Abisaí Miranda Pérez" },
+    { id: 'm10', tag: "JavTendoG", name: "Javier Escalante Guerrero" },
+  ];
+  function mkDefault() {
+    return {
+      players: MK_PLAYERS.map(p => ({ ...p })),
+      order: seededShuffle(MK_PLAYERS.map(p => p.id), 2027),
+      config: { rounds: 1, groupMin: 5 },
+      scores: {}, tb: {}, final: {},
+      updatedAt: 0,
+    };
+  }
+  function mkValid(s) {
+    return s && Array.isArray(s.players) && Array.isArray(s.order) && s.config && typeof s.config === 'object'
+      && s.scores && typeof s.scores === 'object';
+  }
+  function mkMigrate(s) { s.tb = s.tb || {}; s.final = s.final || {}; return s; }
+  let mk = mkDefault();
+
+  // Estructura de rondas. Todos los grupos de una ronda tienen el mismo tamaño (>= mínimo) y de
+  // cada grupo pasa la misma cantidad, así todos tienen las mismas posibilidades. La última ronda
+  // deja exactamente 2 jugadores para la final 1 vs 1.
+  function mkStructure(n, R, g) {
+    const out = []; let N = n; g = Math.max(2, g);
+    for (let r = 0; r < R && N > 2; r++) {
+      const last = r === R - 1;
+      let G = 1;
+      for (let c = Math.floor(N / g); c >= 1; c--) if (N % c === 0) { G = c; break; }
+      let k;
+      if (last) { G = (G >= 2 && N % 2 === 0 && N / 2 >= g) ? 2 : 1; k = 2 / G; }
+      else {
+        const size = N / G;
+        const target = N * Math.pow(2 / N, 1 / (R - r));
+        k = Math.max(1, Math.round(target / G));
+        k = Math.min(k, size - 1);
+        if (G * k < 2) k = 2;
+        if (k >= size) { G = 1; k = 2; }
+      }
+      out.push({ N, G, size: N / G, k });
+      N = G * k;
+    }
+    return out;
+  }
+  function mkMaxRounds(n, g) { let best = 1; for (let R = 1; R <= 8; R++) if (mkStructure(n, R, g).length === R) best = R; return best; }
+
+  const num = v => (v === '' || v === undefined || v === null || isNaN(v)) ? null : Number(v);
+  const GROUP_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+  function mkCompute() {
+    const st = mkStructure(mk.order.length, mk.config.rounds, mk.config.groupMin);
+    const rounds = [];
+    let entrants = mk.order.slice(), known = true;
+    st.forEach((sr, r) => {
+      const groups = Array.from({ length: sr.G }, () => []);
+      if (known) entrants.forEach((pid, i) => groups[i % sr.G].push(pid));
+      const sc = pid => num(mk.scores[`${r}:${pid}`]);
+      const tb = pid => num(mk.tb[`${r}:${pid}`]) ?? 0;
+      const gres = groups.map(members => {
+        const complete = known && members.length > 0 && members.every(pid => sc(pid) !== null);
+        const ranked = complete ? members.slice().sort((a, b) => (sc(b) - sc(a)) || (tb(b) - tb(a))) : members.slice();
+        let qualifiers = [], tie = [];
+        if (complete) {
+          const a = ranked[sr.k - 1], b = ranked[sr.k];
+          if (b !== undefined && sc(a) === sc(b) && tb(a) === tb(b)) {
+            tie = members.filter(pid => sc(pid) === sc(a) && tb(pid) === tb(a));
+            // Los que quedaron arriba del empate sí pasan; el empate se resuelve con desempate.
+            qualifiers = ranked.slice(0, Math.min(...tie.map(t => ranked.indexOf(t))));
+          } else qualifiers = ranked.slice(0, sr.k);
+        }
+        return { members, ranked, complete, qualifiers, tie, done: complete && !tie.length };
+      });
+      const done = known && gres.every(gr => gr.done);
+      rounds.push({ ...sr, index: r, groups: gres, known, done, sc, tb });
+      if (done) { entrants = []; for (let q = 0; q < sr.k; q++) gres.forEach(gr => entrants.push(gr.qualifiers[q])); }
+      else known = false;
+    });
+    const finalists = known ? entrants.slice(0, 2) : null;
+    let s = ['', ''], winner = null;
+    if (finalists && finalists.length === 2) {
+      const f = mk.final;
+      if (f && f.a === finalists[0] && f.b === finalists[1] && Array.isArray(f.s)) s = f.s;
+      const a = num(s[0]), b = num(s[1]);
+      if (a !== null && b !== null && a !== b) winner = a > b ? finalists[0] : finalists[1];
+    }
+    return { rounds, finalists: finalists && finalists.length === 2 ? finalists : null, finalScore: s, winner };
+  }
+  // Quita puntos de jugadores que ya no están en una ronda (p. ej. tras corregir una ronda anterior).
+  function mkPrune() {
+    const c = mkCompute();
+    const keep = new Set();
+    c.rounds.forEach(R => R.groups.forEach(gr => gr.members.forEach(pid => keep.add(`${R.index}:${pid}`))));
+    Object.keys(mk.scores).forEach(k => { if (!keep.has(k)) delete mk.scores[k]; });
+    Object.keys(mk.tb).forEach(k => { if (!keep.has(k)) delete mk.tb[k]; });
+    if (!c.finalists || mk.final.a !== c.finalists[0] || mk.final.b !== c.finalists[1]) mk.final = {};
+  }
+  function setNum(obj, key, val, max) {
+    if (val === '' || val === null) delete obj[key];
+    else obj[key] = Math.max(0, Math.min(max, parseInt(val, 10) || 0));
+  }
+  function mkSetFinal(idx, val) {
+    const c = mkCompute();
+    if (!c.finalists) return;
+    const f = (mk.final.a === c.finalists[0] && mk.final.b === c.finalists[1]) ? mk.final : { a: c.finalists[0], b: c.finalists[1], s: ['', ''] };
+    f.s = Array.isArray(f.s) ? f.s.slice() : ['', ''];
+    f.s[idx] = val === '' ? '' : Math.max(0, Math.min(999, parseInt(val, 10) || 0));
+    mk.final = f;
+  }
+  function mkHasResults() { return Object.keys(mk.scores).length > 0 || Object.keys(mk.final).length > 0; }
+
+  // ---------- Juego activo ----------
+  const GAME_KEY = 'torneo-idm-smash:game';
+  let game = 'smash';
+  try { game = localStorage.getItem(GAME_KEY) || 'smash'; } catch {}
+  if (location.hash === '#mariokart') game = 'mk';
+  if (location.hash === '#smash') game = 'smash';
+  if (game !== 'mk') game = 'smash';
+
+  // ---------- Persistencia (un almacén por juego) ----------
+  const stores = {
+    smash: { local: LOCAL_KEY, api: '/api/state', get: () => state, set: s => { state = migrate(s); }, valid: validState, timer: null, saving: false, dirty: false },
+    mk: { local: 'torneo-idm-smash:mariokart', api: '/api/state?game=mk', get: () => mk, set: s => { mk = mkMigrate(s); }, valid: mkValid, timer: null, saving: false, dirty: false },
+  };
+  function saveLocal(g = game) { try { localStorage.setItem(stores[g].local, JSON.stringify(stores[g].get())); } catch {} }
+  function loadLocal(g) {
+    try { const raw = localStorage.getItem(stores[g].local); return raw ? JSON.parse(raw) : null; } catch { return null; }
   }
   function validState(s) {
     return s && Array.isArray(s.players) && Array.isArray(s.order) && s.results && typeof s.results === 'object'
@@ -660,47 +844,50 @@
     el.className = 'save-state ' + (cls || '');
   }
 
-  function commit(rerender = true) {
-    state.updatedAt = Date.now();
-    saveLocal();
+  function commit(rerender = true, g = game) {
+    const st = stores[g];
+    st.get().updatedAt = Date.now();
+    saveLocal(g);
     if (rerender) render(); else renderStats();
     if (remote.configured) {
-      dirty = true;
+      st.dirty = true;
       setSaveState('Guardando…', 'busy');
-      clearTimeout(saveTimer);
-      saveTimer = setTimeout(pushRemote, 450);
+      clearTimeout(st.timer);
+      st.timer = setTimeout(() => pushRemote(g), 450);
     }
   }
 
-  async function pushRemote() {
-    if (saving) { saveTimer = setTimeout(pushRemote, 300); return; }
-    saving = true; dirty = false;
+  async function pushRemote(g) {
+    const st = stores[g];
+    if (st.saving) { st.timer = setTimeout(() => pushRemote(g), 300); return; }
+    st.saving = true; st.dirty = false;
     try {
-      const r = await fetch('/api/state', {
+      const r = await fetch(st.api, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-pin': pin },
-        body: JSON.stringify({ state }),
+        body: JSON.stringify({ state: st.get() }),
         keepalive: true, // permite terminar el guardado aunque se cierre la pestaña
       });
       const data = await r.json().catch(() => ({}));
       if (r.status === 401) { setSaveState('PIN inválido', 'err'); exitEdit(); askPin(); return; }
       if (!r.ok) throw new Error(data.error || r.status);
-      if (!dirty) state.updatedAt = data.updatedAt;
-      saveLocal();
+      if (!st.dirty) st.get().updatedAt = data.updatedAt;
+      saveLocal(g);
       setSaveState('Guardado en línea', 'ok');
     } catch (e) {
       setSaveState('Error al guardar — reintentando', 'err');
-      dirty = true;
-      clearTimeout(saveTimer);
-      saveTimer = setTimeout(pushRemote, 4000);
+      st.dirty = true;
+      clearTimeout(st.timer);
+      st.timer = setTimeout(() => pushRemote(g), 4000);
     } finally {
-      saving = false;
+      st.saving = false;
     }
   }
 
-  async function pullRemote(initial = false) {
+  async function pullRemote(initial = false, g = game) {
+    const st = stores[g];
     try {
-      const r = await fetch('/api/state', { cache: 'no-store' });
+      const r = await fetch(st.api, { cache: 'no-store' });
       if (!r.ok) throw new Error(r.status);
       const data = await r.json();
       remote = { configured: !!data.configured, pinRequired: !!data.pinRequired, reachable: true };
@@ -710,17 +897,15 @@
         return;
       }
       showNotice('');
-      if (dirty || saving) return;
-      if (data.state && validState(data.state)) {
-        if ((data.state.updatedAt || 0) !== (state.updatedAt || 0)) {
-          state = migrate(data.state);
-          saveLocal();
-          render();
+      if (st.dirty || st.saving) return;
+      if (data.state && st.valid(data.state)) {
+        if ((data.state.updatedAt || 0) !== (st.get().updatedAt || 0)) {
+          st.set(data.state);
+          saveLocal(g);
+          if (g === game) render();
         }
-        setSaveState('Sincronizado', 'ok');
-      } else if (initial) {
-        setSaveState('Sincronizado', 'ok');
       }
+      if (g === game || initial) setSaveState('Sincronizado', 'ok');
     } catch {
       remote.reachable = false;
       setSaveState(initial ? 'Modo local' : 'Sin conexión', initial ? '' : 'err');
@@ -783,12 +968,28 @@
     enterEdit();
   });
   $('#btn-reset').addEventListener('click', () => {
-    if (!confirm('¿Borrar todos los marcadores y resultados? Los enfrentamientos se mantienen.')) return;
-    state.results = {};
+    if (game === 'smash') {
+      if (!confirm('¿Borrar todos los marcadores y resultados de Smash? Los enfrentamientos se mantienen.')) return;
+      state.results = {};
+    } else {
+      if (!confirm('¿Borrar todos los puntos y la final de Mario Kart? Los grupos se mantienen.')) return;
+      mk.scores = {}; mk.tb = {}; mk.final = {};
+    }
     commit();
   });
 
-  // ---------- Tabs ----------
+  // ---------- Selector de juego y tabs ----------
+  function setGame(g) {
+    if (g === game) return;
+    flushScores();
+    game = g;
+    try { localStorage.setItem(GAME_KEY, g); } catch {}
+    history.replaceState(null, '', g === 'mk' ? '#mariokart' : '#smash');
+    render();
+    pullRemote(false, g);
+  }
+  document.querySelectorAll('.game-pill').forEach(b => b.addEventListener('click', () => setGame(b.dataset.game)));
+
   document.querySelectorAll('nav.tabs .tab').forEach(btn => btn.addEventListener('click', () => {
     document.querySelectorAll('nav.tabs .tab').forEach(b => b.setAttribute('aria-selected', String(b === btn)));
     document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + btn.dataset.view));
@@ -805,13 +1006,23 @@
     if (!p) cls += ' empty';
     else if (winner) cls += winner === pid ? ' win' : ' lose';
     const scoreHTML = editing && ready
-      ? `<input class="score-in" type="number" min="0" max="99" inputmode="numeric" value="${esc(score[idx])}" data-score="${r},${m},${idx}" aria-label="Marcador ${esc(p ? shortName(p) : '')}">`
+      ? `<input class="score-in" type="number" min="0" max="99" inputmode="numeric" value="${esc(score[idx])}" data-in="score|${r},${m},${idx}" aria-label="Marcador ${esc(p ? shortName(p) : '')}">`
       : `<span class="score">${esc(score[idx])}</span>`;
     return `<div class="${cls}">
       <span class="seed">${p ? seedOf(pid) : ''}</span>
       <span class="who"><span class="${tagClass(p)}">${p ? esc(label(p)) : 'Por definir'}</span>${p ? `<span class="sub">${esc(p.name)}</span>` : ''}</span>
       ${scoreHTML}
     </div>`;
+  }
+
+  const TROPHY = fill => `<svg width="40" height="40" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v3h3v2a5 5 0 0 1-5 5h-.3A5 5 0 0 1 13 15.9V18h3v3H8v-3h3v-2.1A5 5 0 0 1 9.3 13H9a5 5 0 0 1-5-5V6h3V3zm10 5v3a3 3 0 0 0 1-2.2V8h-1zM6 8v.8A3 3 0 0 0 7 11V8H6z" fill="${fill}"/></svg>`;
+  function champHTML(cp) {
+    return `<div class="champ" data-match="champ">
+        ${TROPHY(cp ? '#ffd84a' : 'var(--line-strong)')}
+        <div class="label">Campeón</div>
+        <div class="name ${cp ? '' : 'tbd'}">${cp ? esc(shortName(cp)) : '???'}</div>
+        ${cp ? `<div class="sub">${cp.tag ? esc(cp.name) : ''}</div>` : '<div class="sub">Por definir</div>'}
+      </div>`;
   }
 
   function renderBracket() {
@@ -830,12 +1041,7 @@
     }
     const ch = champion(), cp = ch && playerById(ch);
     html += `<div class="col"><div class="col-head"><b>Campeón</b><span>&nbsp;</span></div><div class="col-body">
-      <div class="champ" data-match="champ">
-        <svg width="40" height="40" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v3h3v2a5 5 0 0 1-5 5h-.3A5 5 0 0 1 13 15.9V18h3v3H8v-3h3v-2.1A5 5 0 0 1 9.3 13H9a5 5 0 0 1-5-5V6h3V3zm10 5v3a3 3 0 0 0 1-2.2V8h-1zM6 8v.8A3 3 0 0 0 7 11V8H6z" fill="${cp ? '#ffd84a' : 'var(--line-strong)'}"/></svg>
-        <div class="label">Campeón</div>
-        <div class="name ${cp ? '' : 'tbd'}">${cp ? esc(shortName(cp)) : '???'}</div>
-        ${cp ? `<div class="sub">${cp.tag ? esc(cp.name) : ''}</div>` : '<div class="sub">Por definir</div>'}
-      </div></div></div>`;
+      ${champHTML(cp)}</div></div>`;
     $('#bracket').innerHTML = html;
     requestAnimationFrame(drawLines);
   }
@@ -890,10 +1096,118 @@
     return { cls: '', text: '' };
   }
 
+  // ---------- Render Mario Kart ----------
+  const mkPlayer = id => mk.players.find(p => p.id === id);
+  const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+  function mkPlanText(c) {
+    const parts = c.rounds.map(R => `Ronda ${R.index + 1}: ${plural(R.G, 'grupo', 'grupos')} de ${R.size}, pasa${R.k > 1 ? 'n' : ''} ${R.k} por grupo`);
+    parts.push('Final 1 vs 1');
+    return parts.join(' → ');
+  }
+
+  function mkRowHTML(R, gr, pid, pos) {
+    const p = mkPlayer(pid);
+    const key = `${R.index}:${pid}`;
+    const pts = R.sc(pid), inTie = gr.tie.includes(pid);
+    let cls = 'mk-row';
+    if (gr.qualifiers.includes(pid)) cls += ' q';
+    else if (inTie) cls += ' tie';
+    else if (gr.complete) cls += ' out';
+    const ptsHTML = editing
+      ? `<input class="score-in" type="number" min="0" max="999" inputmode="numeric" value="${esc(mk.scores[key] ?? '')}" data-in="mk|${key}" aria-label="Puntos de ${esc(shortName(p))}">`
+      : `<span class="pts">${pts === null ? '—' : pts}</span>`;
+    const tbVal = mk.tb[key];
+    const tbHTML = inTie || tbVal !== undefined
+      ? (editing
+        ? `<span class="tb-line">Desempate <input class="score-in tb-in" type="number" min="0" max="99" inputmode="numeric" value="${esc(tbVal ?? '')}" data-in="mktb|${key}" aria-label="Desempate de ${esc(shortName(p))}"></span>`
+        : (tbVal !== undefined ? `<span class="tb-line">Desempate: ${esc(tbVal)}</span>` : ''))
+      : '';
+    return `<div class="${cls}">
+      <span class="pos">${gr.complete ? pos + 1 : ''}</span>
+      <span class="who"><span class="${tagClass(p)}">${esc(label(p))}</span><span class="sub">${esc(p.name)}</span>${tbHTML}</span>
+      ${gr.qualifiers.includes(pid) ? '<span class="badge">Pasa</span>' : ''}
+      ${ptsHTML}
+    </div>`;
+  }
+
+  function mkGroupHTML(R, gr, gi) {
+    let status = 'Por jugar', scls = '';
+    if (!R.known) { status = 'En espera'; scls = 'wait'; }
+    else if (gr.tie.length) { status = 'Empate'; scls = 'tie'; }
+    else if (gr.done) { status = 'Terminado'; scls = 'done'; }
+    let rows;
+    if (!R.known) {
+      rows = Array.from({ length: R.size }, () => '<div class="mk-row empty"><span class="pos"></span><span class="who"><span class="tag">Por definir</span></span></div>').join('');
+    } else {
+      rows = gr.ranked.map((pid, i) => mkRowHTML(R, gr, pid, i)).join('');
+    }
+    const tieNote = gr.tie.length
+      ? `<div class="tie-note">Empate por el último lugar para pasar. Jueguen una carrera de desempate y anoten sus puntos en “Desemp.”.</div>` : '';
+    return `<div class="mk-group">
+      <div class="mk-group-head"><b>Grupo ${GROUP_LETTERS[gi] || gi + 1}</b><span class="chip ${scls}">${status}</span></div>
+      ${rows}${tieNote}
+    </div>`;
+  }
+
+  function renderMK() {
+    const c = mkCompute(), n = mk.order.length;
+    let html = '';
+    if (editing) {
+      const maxR = mkMaxRounds(n, mk.config.groupMin);
+      html += `<div class="mk-config">
+        <label>Rondas eliminatorias<input type="number" min="1" max="${maxR}" value="${mk.config.rounds}" data-mkcfg="rounds"></label>
+        <label>Mínimo de personas por grupo<input type="number" min="2" max="${n}" value="${mk.config.groupMin}" data-mkcfg="groupMin"></label>
+        <div class="plan"><b>${esc(mkPlanText(c))}</b><br>Con este mínimo caben hasta ${plural(maxR, 'ronda', 'rondas')}. Todos los grupos de una ronda son del mismo tamaño y de cada uno pasan los mismos. Escribe los puntos que hizo cada jugador; los de más puntos pasan solos.</div>
+      </div>`;
+    } else {
+      html += `<p class="mk-plan">${esc(mkPlanText(c))}</p>`;
+    }
+    c.rounds.forEach(R => {
+      html += `<section class="mk-round">
+        <div class="mk-round-head"><b>Ronda ${R.index + 1}</b><span>${plural(R.G, 'grupo', 'grupos')} de ${R.size} · pasa${R.k > 1 ? 'n' : ''} ${R.k} por grupo</span></div>
+        <div class="mk-groups">${R.groups.map((gr, gi) => mkGroupHTML(R, gr, gi)).join('')}</div>
+      </section>`;
+    });
+    // Final 1 vs 1
+    const fs = c.finalScore, win = c.winner;
+    const fslot = idx => {
+      const pid = c.finalists && c.finalists[idx], p = pid && mkPlayer(pid);
+      let cls = 'slot';
+      if (!p) cls += ' empty'; else if (win) cls += win === pid ? ' win' : ' lose';
+      const scoreHTML = editing && c.finalists
+        ? `<input class="score-in" type="number" min="0" max="999" inputmode="numeric" value="${esc(fs[idx])}" data-in="mkfinal|${idx}" aria-label="Marcador final ${esc(p ? shortName(p) : '')}">`
+        : `<span class="score">${esc(fs[idx])}</span>`;
+      return `<div class="${cls}"><span class="seed"></span>
+        <span class="who"><span class="${tagClass(p)}">${p ? esc(label(p)) : 'Por definir'}</span>${p ? `<span class="sub">${esc(p.name)}</span>` : ''}</span>
+        ${scoreHTML}</div>`;
+    };
+    html += `<section class="mk-round">
+      <div class="mk-round-head"><b>Final</b><span>1 vs 1 · el que haga más puntos es el campeón</span></div>
+      <div class="mk-final"><div class="match">${fslot(0)}${fslot(1)}</div>${champHTML(win && mkPlayer(win))}</div>
+    </section>`;
+    $('#mk-view').innerHTML = html;
+  }
+
+  function mkStatus(pid, c) {
+    if (c.winner === pid) return { cls: 'champion', text: '🏆 Campeón' };
+    if (c.finalists && c.finalists.includes(pid)) return { cls: '', text: c.winner ? 'Subcampeón' : 'Finalista' };
+    let text = '', cls = '';
+    c.rounds.forEach(R => R.groups.forEach((gr, gi) => {
+      if (!gr.members.includes(pid)) return;
+      const where = `ronda ${R.index + 1} · grupo ${GROUP_LETTERS[gi]}`;
+      if (gr.done && !gr.qualifiers.includes(pid)) { text = `Eliminado en ${where}`; cls = 'out'; }
+      else if (!gr.done) text = `En ${where}`;
+    }));
+    return { cls, text };
+  }
+
   function renderPlayers() {
-    const sorted = state.order.map(playerById).filter(Boolean);
-    $('#players-grid').innerHTML = sorted.map(p => {
-      const st = playerStatus(p.id);
+    const isMk = game === 'mk';
+    const c = isMk ? mkCompute() : null;
+    const order = isMk ? mk.order : state.order;
+    const find = isMk ? mkPlayer : playerById;
+    $('#players-grid').innerHTML = order.map(find).filter(Boolean).map(p => {
+      const st = isMk ? mkStatus(p.id, c) : playerStatus(p.id);
       const initials = esc((shortName(p) || '?').replace(/[^A-Za-z0-9ÁÉÍÓÚÑáéíóúñ]/g, '').slice(0, 2).toUpperCase() || '?');
       return `<div class="pcard ${st.cls}">
         <div class="avatar">${initials}</div>
@@ -901,64 +1215,104 @@
           ${editing
             ? `<input class="tag-in" data-edit="${p.id}" data-field="tag" value="${esc(p.tag)}" placeholder="Sin GamerTag" aria-label="GamerTag"><span class="sub">${esc(p.name)}</span>`
             : `<span class="${tagClass(p)}">${esc(label(p))}</span><span class="sub">${esc(p.name)}</span>`}
-          <span class="status">#${seedOf(p.id)}${st.text ? ' · ' + esc(st.text) : ''}</span>
+          <span class="status">#${order.indexOf(p.id) + 1}${st.text ? ' · ' + esc(st.text) : ''}</span>
         </div>
       </div>`;
     }).join('');
   }
 
   function renderStats() {
-    let total = 0, played = 0;
-    forEachMatch((r, m) => { total++; if (winnerOf(r, m)) played++; });
-    $('#st-players').textContent = state.players.length;
+    let total = 0, played = 0, roundText;
+    if (game === 'smash') {
+      forEachMatch((r, m) => { total++; if (winnerOf(r, m)) played++; });
+      $('#st-players').textContent = state.players.length;
+      const cur = currentRound();
+      roundText = cur === null ? 'Terminado' : roundShort(cur);
+      $('#st-played-label').textContent = 'Combates';
+    } else {
+      const c = mkCompute();
+      c.rounds.forEach(R => R.groups.forEach(gr => { total++; if (gr.done) played++; }));
+      total++; if (c.winner) played++;
+      $('#st-players').textContent = mk.players.length;
+      const cur = c.rounds.find(R => !R.done);
+      roundText = cur ? `Ronda ${cur.index + 1}` : (c.winner ? 'Terminado' : 'Final');
+      $('#st-played-label').textContent = 'Grupos y final';
+    }
     $('#st-played').textContent = `${played}/${total}`;
-    const cur = currentRound();
-    $('#st-round').textContent = cur === null ? 'Terminado' : roundShort(cur);
+    $('#st-round').textContent = roundText;
     $('#progress').style.width = (total ? (played / total) * 100 : 0) + '%';
   }
 
   function render() {
+    const isMk = game === 'mk';
+    document.querySelectorAll('.game-pill').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.game === game)));
+    $('#tab-main').textContent = isMk ? 'Grupos y final' : 'Bracket';
+    $('#bracket-wrap').hidden = isMk;
+    $('#mk-view').hidden = !isMk;
+    $('#toolbar-hint').innerHTML = isMk
+      ? 'Arriba eliges cuántas rondas y el mínimo de personas por grupo. Escribe los puntos de cada jugador: <b>los que hagan más puntos pasan solos a la siguiente ronda</b>, y la final es 1 vs 1.'
+      : 'Escribe los puntos de cada jugador. <b>El que tenga más puntos pasa automáticamente a la siguiente ronda.</b> Si borras o cambias un marcador, el bracket se corrige solo.';
+    $('#footer-text').textContent = isMk
+      ? `Mario Kart · ${mk.players.length} jugadores · Los resultados se actualizan automáticamente.`
+      : 'Smash · Eliminación directa · 16 jugadores · Los resultados se actualizan automáticamente.';
     renderStats();
-    renderBracket();
+    if (isMk) renderMK(); else renderBracket();
     renderPlayers();
   }
 
   // ---------- Interacción ----------
-  // Los marcadores se juntan y se aplican de una vez: al salir de la casilla (Tab, Enter, tocar
+  // Los puntos se juntan y se aplican de una vez: al salir de la casilla (Tab, Enter, tocar
   // fuera) o tras una pausa al escribir. Después se devuelve el cursor a donde esté la persona.
-  const pendingScores = new Map();
+  const pending = new Map();
   let scoreTimer;
-  function queueScore(el, delay) {
-    pendingScores.set(el.dataset.score, el.value);
+  function queueInput(el, delay) {
+    pending.set(el.dataset.in, el.value);
     clearTimeout(scoreTimer);
     scoreTimer = setTimeout(flushScores, delay);
   }
   function flushScores() {
-    if (!pendingScores.size) return;
+    clearTimeout(scoreTimer);
+    if (!pending.size) return;
     const active = document.activeElement;
-    const activeKey = active && active.dataset ? active.dataset.score : null;
+    const activeKey = active && active.dataset ? active.dataset.in : null;
     const caret = activeKey ? active.value.length : 0;
-    pendingScores.forEach((val, key) => {
-      const [r, m, idx] = key.split(',').map(Number);
-      setScore(r, m, idx, val);
+    let touched = null;
+    pending.forEach((val, id) => {
+      const [kind, key] = id.split('|');
+      if (kind === 'score') { const [r, m, idx] = key.split(',').map(Number); setScore(r, m, idx, val); touched = 'smash'; }
+      else if (kind === 'mk') { setNum(mk.scores, key, val, 999); touched = 'mk'; }
+      else if (kind === 'mktb') { setNum(mk.tb, key, val, 99); touched = 'mk'; }
+      else if (kind === 'mkfinal') { mkSetFinal(Number(key), val); touched = 'mk'; }
     });
-    pendingScores.clear();
-    commit();
-    const again = activeKey && document.querySelector(`#view-bracket [data-score="${activeKey}"]`);
+    pending.clear();
+    if (touched === 'mk') mkPrune();
+    if (touched) commit(true, touched);
+    const again = activeKey && document.querySelector(`[data-in="${activeKey}"]`);
     if (again) { again.focus(); try { again.setSelectionRange(caret, caret); } catch {} }
   }
   document.addEventListener('input', e => {
-    if (e.target.dataset && e.target.dataset.score) queueScore(e.target, 900);
+    if (e.target.dataset && e.target.dataset.in) queueInput(e.target, 900);
   });
   document.addEventListener('change', e => {
     const el = e.target;
-    if (el.dataset.score) {
-      queueScore(el, 0);
+    if (el.dataset.in) {
+      queueInput(el, 0);
+    } else if (el.dataset.mkcfg) {
+      const field = el.dataset.mkcfg, n = mk.order.length;
+      let v = parseInt(el.value, 10);
+      if (isNaN(v)) { render(); return; }
+      if (field === 'groupMin') v = Math.max(2, Math.min(n, v));
+      if (field === 'rounds') v = Math.max(1, Math.min(mkMaxRounds(n, mk.config.groupMin), v));
+      if (v === mk.config[field]) { render(); return; }
+      if (mkHasResults() && !confirm('Cambiar el formato borra los puntos que ya se capturaron en Mario Kart. ¿Continuar?')) { render(); return; }
+      mk.config[field] = v;
+      mk.config.rounds = Math.max(1, Math.min(mkMaxRounds(n, mk.config.groupMin), mk.config.rounds));
+      mk.scores = {}; mk.tb = {}; mk.final = {};
+      commit(true, 'mk');
     } else if (el.dataset.edit) {
-      const p = playerById(el.dataset.edit);
+      const p = (game === 'mk' ? mkPlayer : playerById)(el.dataset.edit);
       if (!p) return;
-      const v = el.value.trim();
-      p[el.dataset.field] = v;
+      p[el.dataset.field] = el.value.trim();
       commit();
     }
   });
@@ -968,10 +1322,12 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawLines);
 
   // ---------- Arranque ----------
-  const local = loadLocal();
-  if (validState(local)) state = migrate(local);
+  const localSmash = loadLocal('smash');
+  if (validState(localSmash)) state = migrate(localSmash);
+  const localMk = loadLocal('mk');
+  if (mkValid(localMk)) mk = mkMigrate(localMk);
   render();
-  pullRemote(true);
+  pullRemote(true, 'smash').then(() => pullRemote(true, 'mk'));
   setInterval(() => { if (document.visibilityState === 'visible') pullRemote(); }, 8000);
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') pullRemote();
@@ -980,9 +1336,14 @@
   window.addEventListener('pagehide', flushSave);
   // Si hay un cambio pendiente de guardar, lo envía de inmediato (al cerrar o cambiar de pestaña).
   function flushSave() {
-    if (!remote.configured || !dirty || saving) return;
-    clearTimeout(saveTimer);
-    pushRemote();
+    flushScores();
+    if (!remote.configured) return;
+    Object.keys(stores).forEach(g => {
+      const st = stores[g];
+      if (!st.dirty || st.saving) return;
+      clearTimeout(st.timer);
+      pushRemote(g);
+    });
   }
 })();
 </script>
