@@ -34,8 +34,8 @@ function isValidState(game, s) {
     Array.isArray(s.players) && s.players.length <= 128 &&
     Array.isArray(s.order) && s.order.length <= 128;
   if (!base) return false;
-  if (game === 'mk') return isObject(s.config) && isObject(s.scores);
-  return isObject(s.results);
+  // Ambos juegos usan el mismo formato: configuración (consolas y juegos) y puntos por ronda.
+  return isObject(s.config) && isObject(s.scores);
 }
 
 export default async function handler(req, res) {

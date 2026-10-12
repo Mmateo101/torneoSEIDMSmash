@@ -295,6 +295,20 @@
   .champ .name.tbd { color: var(--line-strong); }
   .champ .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
+  /* ---------- Torneo (rondas en columnas, como bracket) ---------- */
+  .t-rounds { display: flex; gap: 28px; overflow-x: auto; padding: 2px 2px 10px; -webkit-overflow-scrolling: touch; }
+  .t-col { flex: 1 0 230px; display: flex; flex-direction: column; min-width: 230px; }
+  .t-col.wide { flex-basis: 290px; min-width: 290px; }
+  .t-col-body { flex: 1; display: flex; flex-direction: column; justify-content: space-around; gap: 14px; }
+  .mk-group.duel .mk-group-head { padding: 5px 12px; font-size: 11px; }
+  .mk-group.duel .mk-group-head b { font-family: Poppins, sans-serif; font-weight: 600; font-size: 11px; color: var(--muted); text-transform: none; letter-spacing: 0; }
+  .warn { color: #ffd04a; }
+  @media (max-width: 720px) {
+    .t-rounds { flex-direction: column; overflow: visible; gap: 22px; }
+    .t-col, .t-col.wide { min-width: 0; flex-basis: auto; }
+    .t-col-body { gap: 10px; }
+  }
+
   /* ---------- Mario Kart ---------- */
   .mk-plan { margin: 0 0 16px; color: var(--muted); font-size: 13px; }
   .mk-config { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 18px; box-shadow: var(--shadow); }
@@ -397,7 +411,7 @@
       </div>
       <div class="stats">
         <div class="stat"><b id="st-players">16</b><span>Jugadores</span></div>
-        <div class="stat"><b id="st-played">0/15</b><span id="st-played-label">Combates</span></div>
+        <div class="stat"><b id="st-played">0/15</b><span id="st-played-label">Juegos</span></div>
         <div class="stat"><b id="st-round">Octavos</b><span>Ronda</span></div>
       </div>
     </div>
@@ -405,7 +419,7 @@
   </header>
 
   <nav class="tabs" role="tablist">
-    <button class="tab" role="tab" data-view="bracket" aria-selected="true" id="tab-main">Bracket</button>
+    <button class="tab" role="tab" data-view="bracket" aria-selected="true" id="tab-main">Torneo</button>
     <button class="tab" role="tab" data-view="players" aria-selected="false">Participantes</button>
     <span class="spacer"></span>
     <span class="save-state" id="save-state">Cargando…</span>
@@ -421,8 +435,7 @@
   </div>
 
   <section class="view active" id="view-bracket">
-    <div class="bracket-wrap" id="bracket-wrap"><div class="bracket" id="bracket"></div></div>
-    <div id="mk-view" hidden></div>
+    <div id="t-view"></div>
   </section>
 
   <section class="view" id="view-players">
@@ -745,31 +758,47 @@
 (() => {
   'use strict';
 
-  // ---------- Datos iniciales (inscripciones de Smash) ----------
-  const DEFAULT_PLAYERS = [
-    { id: 'p1', tag: "NXCT", name: "Luis Elizondo Sánchez" },
-    { id: 'p2', tag: "PepeElPollo27", name: "Andres Galland" },
-    { id: 'p3', tag: "Vegettoblue86", name: "Jaill Gilberto García Maturino" },
-    { id: 'p4', tag: "ImEddy013", name: "Ángel Eduardo Aguirre Rodríguez" },
-    { id: 'p5', tag: "Sebazzu", name: "Sebastian Becerra Ojeda" },
-    { id: 'p6', tag: "AbbytoFAN", name: "Hiram Abisaí Miranda Pérez" },
-    { id: 'p7', tag: "TheRoman", name: "César Augusto Castillo Calderón" },
-    { id: 'p8', tag: "Juan_rv", name: "Juan Antonio Rivera Sandoval" },
-    { id: 'p9', tag: "Alpro0204", name: "Aldo Contreras Castillo" },
-    { id: 'p10', tag: "RW", name: "Ricardo Alfonso Willis Garza" },
-    { id: 'p11', tag: "", name: "Alejandro Rodriguez Escalona" },
-    { id: 'p12', tag: "weird_dude586", name: "Braulio Elias Garcia Cruz" },
-    { id: 'p13', tag: "Sm07", name: "Marco Antonio Rebolledo Mérida" },
-    { id: 'p14', tag: "J-Butcher", name: "Jaime Barraza" },
-    { id: 'p15', tag: "MF2150", name: "Diego Gael Flores Millán" },
-    { id: 'p16', tag: "Mein_Armonia", name: "Gonzalo Tadeo Esparza Romero" },
-  ];
-
-  const DATA_VERSION = 3;
-  const LOCAL_KEY = 'torneo-idm-smash:state';
+  // ---------- Inscritos (tomados tal cual del registro) ----------
+  const PLAYERS = {
+    smash: [
+      { id: 'p1', tag: "NXCT", name: "Luis Elizondo Sánchez" },
+      { id: 'p2', tag: "PepeElPollo27", name: "Andres Galland" },
+      { id: 'p3', tag: "Vegettoblue86", name: "Jaill Gilberto García Maturino" },
+      { id: 'p4', tag: "ImEddy013", name: "Ángel Eduardo Aguirre Rodríguez" },
+      { id: 'p5', tag: "Sebazzu", name: "Sebastian Becerra Ojeda" },
+      { id: 'p6', tag: "AbbytoFAN", name: "Hiram Abisaí Miranda Pérez" },
+      { id: 'p7', tag: "TheRoman", name: "César Augusto Castillo Calderón" },
+      { id: 'p8', tag: "Juan_rv", name: "Juan Antonio Rivera Sandoval" },
+      { id: 'p9', tag: "Alpro0204", name: "Aldo Contreras Castillo" },
+      { id: 'p10', tag: "RW", name: "Ricardo Alfonso Willis Garza" },
+      { id: 'p11', tag: "", name: "Alejandro Rodriguez Escalona" },
+      { id: 'p12', tag: "weird_dude586", name: "Braulio Elias Garcia Cruz" },
+      { id: 'p13', tag: "Sm07", name: "Marco Antonio Rebolledo Mérida" },
+      { id: 'p14', tag: "J-Butcher", name: "Jaime Barraza" },
+      { id: 'p15', tag: "MF2150", name: "Diego Gael Flores Millán" },
+      { id: 'p16', tag: "Mein_Armonia", name: "Gonzalo Tadeo Esparza Romero" },
+    ],
+    mk: [
+      { id: 'm1', tag: "Thomasitop", name: "Antonio Vences Rossell" },
+      { id: 'm2', tag: "DrWaza", name: "Pedro Eduardo De Leon Jr" },
+      { id: 'm3', tag: "alvarozepedaa", name: "Álvaro Santiago Zepeda López" },
+      { id: 'm4', tag: "Pauxl_15", name: "Paúl Alexander Calderón Pilla" },
+      { id: 'm5', tag: "", name: "diego anaya hernandez" },
+      { id: 'm6', tag: "Arigame9000", name: "Ari José De León Durán" },
+      { id: 'm7', tag: "Blackwidow9000", name: "Fernanda Michelle Garcia Arriaga" },
+      { id: 'm8', tag: "J-Butcher", name: "Jaime Barraza" },
+      { id: 'm9', tag: "AbbytoFAN", name: "Hiram Abisaí Miranda Pérez" },
+      { id: 'm10', tag: "JavTendoG", name: "Javier Escalante Guerrero" },
+    ],
+  };
+  // Valores por defecto: Smash queda como bracket 1 vs 1 de 15 juegos; Mario Kart, 2 grupos de 5 y final.
+  const DEFAULT_CONFIG = { smash: { consoles: 2, games: 15 }, mk: { consoles: 3, games: 3 } };
+  const SEEDS = { smash: 2026, mk: 2027 };
+  const NAME_VERSION = 3;
   const PIN_KEY = 'torneo-idm-smash:pin';
+  const GAME_KEY = 'torneo-idm-smash:game';
 
-  // Sorteo reproducible para el bracket inicial.
+  // Sorteo reproducible del orden inicial.
   function seededShuffle(arr, seed) {
     const a = arr.slice();
     let t = seed >>> 0;
@@ -777,29 +806,83 @@
     for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
     return a;
   }
-  function defaultState() {
+  function defaultState(g) {
     return {
-      players: DEFAULT_PLAYERS.map(p => ({ ...p })),
-      order: seededShuffle(DEFAULT_PLAYERS.map(p => p.id), 2026),
-      results: {},
-      updatedAt: 0,
-      dataVersion: DATA_VERSION,
+      players: PLAYERS[g].map(p => ({ ...p })),
+      order: seededShuffle(PLAYERS[g].map(p => p.id), SEEDS[g]),
+      config: { ...DEFAULT_CONFIG[g] },
+      scores: {}, tb: {},
+      updatedAt: 0, dataVersion: NAME_VERSION,
     };
   }
-  // Corrige nombres/GamerTags de estados guardados con la versión anterior de la lista,
-  // conservando el orden del bracket y los resultados.
-  function migrate(s) {
-    if (s.dataVersion === DATA_VERSION) return s;
-    DEFAULT_PLAYERS.forEach(d => {
-      const p = s.players.find(x => x.id === d.id);
-      if (p) { Object.assign(p, { tag: d.tag, name: d.name }); delete p.main; }
-    });
-    s.dataVersion = DATA_VERSION;
-    return s;
+
+  // ======================================================================
+  // ---------- Planificador de la estructura ----------
+  // Con el número de consolas y de juegos en total, calcula cuántas rondas, de qué tamaño los
+  // grupos y cuántos pasan. Cada "juego" es una partida de un grupo. Los grupos de una ronda son
+  // del mismo tamaño siempre que se pueda y de cada uno pasan los mismos. Termina en final 1 vs 1.
+  // ======================================================================
+  // Smash: hasta 4 por juego en una consola. Mario Kart: 4 por consola, o con varias consolas en
+  // red local hasta 2 por consola (máx. 12).
+  const maxPerGame = (g, C) => g === 'mk' ? Math.min(12, Math.max(4, 2 * C)) : 4;
+  const consolesFor = size => size <= 4 ? 1 : Math.ceil(size / 2);
+  const splitSizes = (N, g) => { const b = Math.floor(N / g), x = N % g; return Array.from({ length: g }, (_, i) => b + (i < x ? 1 : 0)); };
+
+  const planCache = new Map();
+  function allStructures(n, g, C) {
+    const maxP = maxPerGame(g, C), out = [];
+    (function rec(N, rounds) {
+      if (rounds.length > 6) return;
+      if (N === 2) { out.push(rounds.slice()); return; }
+      for (let G = 1; G <= Math.floor(N / 2); G++) {
+        const sizes = splitSizes(N, G), minS = Math.min(...sizes), maxS = Math.max(...sizes);
+        if (minS < 2 || maxS > maxP || sizes.some(s => consolesFor(s) > C)) continue;
+        for (let k = 1; k < minS; k++) {
+          const next = G * k;
+          if (next < 2 || next >= N) continue;
+          rounds.push({ N, G, sizes, k, equal: minS === maxS });
+          rec(next, rounds);
+          rounds.pop();
+        }
+      }
+    })(n, []);
+    return out.map(rounds => ({
+      rounds,
+      games: rounds.reduce((a, r) => a + r.G, 0) + 1,
+      tandas: rounds.reduce((a, r) => a + Math.ceil(r.sizes.reduce((x, s) => x + consolesFor(s), 0) / C), 0) + 1,
+      equal: rounds.every(r => r.equal),
+      avg: rounds.length ? rounds.reduce((a, r) => a + r.N, 0) / rounds.reduce((a, r) => a + r.G, 0) : 2,
+    }));
+  }
+  function plan(n, g, C, G) {
+    const key = [n, g, C, G].join('|');
+    if (planCache.has(key)) return planCache.get(key);
+    const all = allStructures(n, g, C);
+    let res;
+    if (!all.length) res = { error: 'No hay una estructura posible con estas consolas.' };
+    else {
+      const minGames = Math.min(...all.map(s => s.games)), maxGames = Math.max(...all.map(s => s.games));
+      const fit = all.filter(s => s.games <= G);
+      if (!fit.length) res = { error: `Con ${C} consola${C > 1 ? 's' : ''} se necesitan al menos ${minGames} juegos.`, minGames, maxGames };
+      else {
+        // Primero grupos iguales; luego usar la mayor cantidad de juegos permitida; luego más 1 vs 1.
+        fit.sort((a, b) => (b.equal - a.equal) || (b.games - a.games) || (a.avg - b.avg) || (a.rounds.length - b.rounds.length) || (a.tandas - b.tandas));
+        res = { ...fit[0], minGames, maxGames };
+      }
+    }
+    planCache.set(key, res);
+    return res;
   }
 
   // ---------- Estado ----------
-  let state = defaultState();
+  const S = { smash: defaultState('smash'), mk: defaultState('mk') };
+  let game = 'smash';
+  try { game = localStorage.getItem(GAME_KEY) || 'smash'; } catch {}
+  if (location.hash === '#mariokart') game = 'mk';
+  if (location.hash === '#smash') game = 'smash';
+  if (game !== 'mk') game = 'smash';
+  const cur = () => S[game];
+
   let remote = { configured: false, pinRequired: false, reachable: false };
   let editing = false;
   let pin = '';
@@ -807,236 +890,153 @@
 
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const playerById = id => state.players.find(p => p.id === id);
-  // Si no registró GamerTag se muestra su nombre tal como lo escribió.
+  // Si no registró GamerTag se muestra "Sin GamerTag" y abajo su nombre tal como lo escribió.
   const label = p => p.tag || 'Sin GamerTag';
   const tagClass = p => (p && !p.tag ? 'tag no-tag' : 'tag');
-  const shortName = p => p.tag || p.name; // para campeón y avisos
-  const numRounds = () => Math.log2(state.order.length);
-
-  function roundName(r) {
-    const left = state.order.length >> r; // jugadores en esa ronda
-    if (left === 2) return 'Gran Final';
-    if (left === 4) return 'Semifinales';
-    if (left === 8) return 'Cuartos de final';
-    if (left === 16) return 'Octavos de final';
-    return `Ronda de ${left}`;
-  }
-  function roundShort(r) {
-    const left = state.order.length >> r;
-    return { 2: 'Final', 4: 'Semis', 8: 'Cuartos', 16: 'Octavos' }[left] || `R${r + 1}`;
-  }
-  const matchId = (r, m) => `${r}-${m}`;
-  function matchNumber(r, m) {
-    let n = 0;
-    for (let i = 0; i < r; i++) n += state.order.length >> (i + 1);
-    return n + m + 1;
-  }
-
-  // Jugadores de un combate, derivados del orden inicial y los ganadores previos.
-  function participants(r, m) {
-    if (r === 0) return [state.order[2 * m] || null, state.order[2 * m + 1] || null];
-    return [winnerOf(r - 1, 2 * m), winnerOf(r - 1, 2 * m + 1)];
-  }
-  function winnerOf(r, m) {
-    const res = state.results[matchId(r, m)];
-    if (!res || !res.w) return null;
-    const ps = participants(r, m);
-    return ps.includes(res.w) ? res.w : null;
-  }
-  // Elimina ganadores que ya no son válidos (p. ej. tras deshacer una ronda anterior).
-  function prune() {
-    for (let r = 0; r < numRounds(); r++) {
-      const count = state.order.length >> (r + 1);
-      for (let m = 0; m < count; m++) {
-        const id = matchId(r, m), res = state.results[id];
-        if (res && res.w && !participants(r, m).includes(res.w)) {
-          delete state.results[id];
-        }
-      }
-    }
-  }
-  function forEachMatch(fn) {
-    for (let r = 0; r < numRounds(); r++) {
-      const count = state.order.length >> (r + 1);
-      for (let m = 0; m < count; m++) fn(r, m);
-    }
-  }
-  function champion() { return winnerOf(numRounds() - 1, 0); }
-
-  function setScore(r, m, idx, val) {
-    const id = matchId(r, m);
-    const res = state.results[id] || {};
-    const s = Array.isArray(res.s) ? res.s.slice() : ['', ''];
-    s[idx] = val === '' ? '' : Math.max(0, Math.min(99, parseInt(val, 10) || 0));
-    res.s = s;
-    // El ganador lo decide el marcador: quien tenga más puntos avanza.
-    const ps = participants(r, m);
-    if (s[0] !== '' && s[1] !== '' && s[0] !== s[1]) res.w = ps[s[0] > s[1] ? 0 : 1];
-    else delete res.w;
-    if (s[0] === '' && s[1] === '') delete res.s;
-    if (!res.w && !res.s) delete state.results[id]; else state.results[id] = res;
-    prune();
-  }
-  function scoreOf(r, m) {
-    const res = state.results[matchId(r, m)];
-    return res && Array.isArray(res.s) ? res.s : ['', ''];
-  }
-
-  // ======================================================================
-  // ---------- Mario Kart: grupos por puntos + final 1 vs 1 ----------
-  // ======================================================================
-  const MK_PLAYERS = [
-    { id: 'm1', tag: "Thomasitop", name: "Antonio Vences Rossell" },
-    { id: 'm2', tag: "DrWaza", name: "Pedro Eduardo De Leon Jr" },
-    { id: 'm3', tag: "alvarozepedaa", name: "Álvaro Santiago Zepeda López" },
-    { id: 'm4', tag: "Pauxl_15", name: "Paúl Alexander Calderón Pilla" },
-    { id: 'm5', tag: "", name: "diego anaya hernandez" },
-    { id: 'm6', tag: "Arigame9000", name: "Ari José De León Durán" },
-    { id: 'm7', tag: "Blackwidow9000", name: "Fernanda Michelle Garcia Arriaga" },
-    { id: 'm8', tag: "J-Butcher", name: "Jaime Barraza" },
-    { id: 'm9', tag: "AbbytoFAN", name: "Hiram Abisaí Miranda Pérez" },
-    { id: 'm10', tag: "JavTendoG", name: "Javier Escalante Guerrero" },
-  ];
-  function mkDefault() {
-    return {
-      players: MK_PLAYERS.map(p => ({ ...p })),
-      order: seededShuffle(MK_PLAYERS.map(p => p.id), 2027),
-      config: { rounds: 1, groupMin: 5 },
-      scores: {}, tb: {}, final: {},
-      updatedAt: 0,
-    };
-  }
-  function mkValid(s) {
-    return s && Array.isArray(s.players) && Array.isArray(s.order) && s.config && typeof s.config === 'object'
-      && s.scores && typeof s.scores === 'object';
-  }
-  function mkMigrate(s) { s.tb = s.tb || {}; s.final = s.final || {}; return s; }
-  let mk = mkDefault();
-
-  // Estructura de rondas. Todos los grupos de una ronda tienen el mismo tamaño (>= mínimo) y de
-  // cada grupo pasa la misma cantidad, así todos tienen las mismas posibilidades. La última ronda
-  // deja exactamente 2 jugadores para la final 1 vs 1.
-  function mkStructure(n, R, g) {
-    const out = []; let N = n; g = Math.max(2, g);
-    for (let r = 0; r < R && N > 2; r++) {
-      const last = r === R - 1;
-      let G = 1;
-      for (let c = Math.floor(N / g); c >= 1; c--) if (N % c === 0) { G = c; break; }
-      let k;
-      if (last) { G = (G >= 2 && N % 2 === 0 && N / 2 >= g) ? 2 : 1; k = 2 / G; }
-      else {
-        const size = N / G;
-        const target = N * Math.pow(2 / N, 1 / (R - r));
-        k = Math.max(1, Math.round(target / G));
-        k = Math.min(k, size - 1);
-        if (G * k < 2) k = 2;
-        if (k >= size) { G = 1; k = 2; }
-      }
-      out.push({ N, G, size: N / G, k });
-      N = G * k;
-    }
-    return out;
-  }
-  function mkMaxRounds(n, g) { let best = 1; for (let R = 1; R <= 8; R++) if (mkStructure(n, R, g).length === R) best = R; return best; }
-
+  const shortName = p => p.tag || p.name;
   const num = v => (v === '' || v === undefined || v === null || isNaN(v)) ? null : Number(v);
-  const GROUP_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
-  function mkCompute() {
-    const st = mkStructure(mk.order.length, mk.config.rounds, mk.config.groupMin);
+  // ---------- Migraciones de datos guardados ----------
+  // Bracket viejo de Smash ({ order, results: {"r-m": {s, w}} }) → puntos por ronda. Con la
+  // configuración por defecto la estructura es la misma, así que los resultados se conservan.
+  function fromBracket(old) {
+    const t = defaultState('smash');
+    t.players = old.players; t.order = old.order; t.updatedAt = old.updatedAt || 0;
+    const R = Math.log2(old.order.length), res = old.results || {};
+    const pair = (r, m) => r === 0 ? [old.order[2 * m], old.order[2 * m + 1]] : [win(r - 1, 2 * m), win(r - 1, 2 * m + 1)];
+    function win(r, m) { const x = res[`${r}-${m}`]; const ps = pair(r, m); return x && x.w && ps.includes(x.w) ? x.w : null; }
+    for (let r = 0; r < R; r++) for (let m = 0; m < old.order.length >> (r + 1); m++) {
+      const x = res[`${r}-${m}`], ps = pair(r, m);
+      if (!x || !ps[0] || !ps[1]) continue;
+      if (Array.isArray(x.s)) ps.forEach((pid, i) => { if (x.s[i] !== '' && x.s[i] != null) t.scores[`${r}:${pid}`] = Number(x.s[i]); });
+      else if (x.w) ps.forEach(pid => { t.scores[`${r}:${pid}`] = pid === x.w ? 1 : 0; });
+    }
+    return t;
+  }
+  function migrate(g, s) {
+    if (g === 'smash' && s.results && !s.config) s = fromBracket(s);
+    if (!s.config || s.config.consoles === undefined) { s.config = { ...DEFAULT_CONFIG[g] }; s.scores = {}; s.tb = {}; }
+    s.scores = s.scores || {}; s.tb = s.tb || {};
+    delete s.final; delete s.results;
+    if (s.dataVersion !== NAME_VERSION) {
+      PLAYERS[g].forEach(d => {
+        const p = s.players.find(x => x.id === d.id);
+        if (p) { Object.assign(p, { tag: d.tag, name: d.name }); delete p.main; }
+      });
+      s.dataVersion = NAME_VERSION;
+    }
+    return s;
+  }
+  function validState(s) {
+    return s && typeof s === 'object' && Array.isArray(s.players) && Array.isArray(s.order) && s.order.length >= 2
+      && ((s.config && typeof s.config === 'object' && s.scores && typeof s.scores === 'object') || (s.results && typeof s.results === 'object'));
+  }
+
+  // ---------- Cálculo del torneo ----------
+  function structureOf(t, g) {
+    const p = plan(t.order.length, g, t.config.consoles, t.config.games);
+    return p.error ? null : p;
+  }
+  function roundName(R, all) {
+    if (R.final) return 'Final';
+    if (R.sizes.every(s => s === 2)) {
+      if (R.N === 16) return 'Octavos de final';
+      if (R.N === 8) return 'Cuartos de final';
+      if (R.N === 4) return 'Semifinales';
+    }
+    return `Ronda ${R.index + 1}`;
+  }
+  function roundShort(R) {
+    return { 'Octavos de final': 'Octavos', 'Cuartos de final': 'Cuartos', Semifinales: 'Semis' }[R.name] || R.name;
+  }
+
+  function compute(t, g) {
+    const st = structureOf(t, g);
+    if (!st) return null;
+    const defs = st.rounds.map(r => ({ ...r })).concat([{ N: 2, G: 1, sizes: [2], k: 1, equal: true, final: true }]);
     const rounds = [];
-    let entrants = mk.order.slice(), known = true;
-    st.forEach((sr, r) => {
-      const groups = Array.from({ length: sr.G }, () => []);
-      if (known) entrants.forEach((pid, i) => groups[i % sr.G].push(pid));
-      const sc = pid => num(mk.scores[`${r}:${pid}`]);
-      const tb = pid => num(mk.tb[`${r}:${pid}`]) ?? 0;
-      const gres = groups.map(members => {
+    let gameNo = 0;
+    defs.forEach((d, r) => {
+      // Quién juega en cada grupo. Primera ronda: el orden del sorteo en bloques seguidos.
+      // Si en la ronda anterior pasaba 1 por grupo, cada grupo se llena en cuanto terminan los
+      // grupos que lo alimentan (como un bracket). Si pasaban varios, se espera a que termine la
+      // ronda y se mezclan por lugar para evitar revanchas.
+      const prev = rounds[r - 1];
+      const groups = d.sizes.map(() => ({ members: [], known: false }));
+      if (r === 0) {
+        let i = 0; d.sizes.forEach((sz, gi) => { groups[gi].members = t.order.slice(i, i + sz); groups[gi].known = true; i += sz; });
+      } else if (prev.k === 1) {
+        let i = 0;
+        d.sizes.forEach((sz, gi) => {
+          const feeders = prev.groups.slice(i, i + sz); i += sz;
+          groups[gi].known = feeders.every(f => f.done);
+          groups[gi].members = groups[gi].known ? feeders.map(f => f.qualifiers[0]) : [];
+        });
+      } else if (prev.done) {
+        const entrants = [];
+        for (let q = 0; q < prev.k; q++) prev.groups.forEach(x => entrants.push(x.qualifiers[q]));
+        entrants.forEach((pid, i) => groups[i % d.G].members.push(pid));
+        groups.forEach(x => { x.known = true; });
+      }
+      const sc = pid => num(t.scores[`${r}:${pid}`]);
+      const tb = pid => num(t.tb[`${r}:${pid}`]) ?? 0;
+      const gres = groups.map(({ members, known }, gi) => {
+        const size = d.sizes[gi];
         const complete = known && members.length > 0 && members.every(pid => sc(pid) !== null);
         const ranked = complete ? members.slice().sort((a, b) => (sc(b) - sc(a)) || (tb(b) - tb(a))) : members.slice();
         let qualifiers = [], tie = [];
         if (complete) {
-          const a = ranked[sr.k - 1], b = ranked[sr.k];
+          const a = ranked[d.k - 1], b = ranked[d.k];
           if (b !== undefined && sc(a) === sc(b) && tb(a) === tb(b)) {
             tie = members.filter(pid => sc(pid) === sc(a) && tb(pid) === tb(a));
             // Los que quedaron arriba del empate sí pasan; el empate se resuelve con desempate.
-            qualifiers = ranked.slice(0, Math.min(...tie.map(t => ranked.indexOf(t))));
-          } else qualifiers = ranked.slice(0, sr.k);
+            qualifiers = ranked.slice(0, Math.min(...tie.map(x => ranked.indexOf(x))));
+          } else qualifiers = ranked.slice(0, d.k);
         }
-        return { members, ranked, complete, qualifiers, tie, done: complete && !tie.length };
+        return { members, known, size, ranked, complete, qualifiers, tie, done: complete && !tie.length, no: ++gameNo };
       });
-      const done = known && gres.every(gr => gr.done);
-      rounds.push({ ...sr, index: r, groups: gres, known, done, sc, tb });
-      if (done) { entrants = []; for (let q = 0; q < sr.k; q++) gres.forEach(gr => entrants.push(gr.qualifiers[q])); }
-      else known = false;
+      const R = { ...d, index: r, groups: gres, done: gres.every(x => x.done), sc, tb };
+      R.name = roundName(R);
+      rounds.push(R);
     });
-    const finalists = known ? entrants.slice(0, 2) : null;
-    let s = ['', ''], winner = null;
-    if (finalists && finalists.length === 2) {
-      const f = mk.final;
-      if (f && f.a === finalists[0] && f.b === finalists[1] && Array.isArray(f.s)) s = f.s;
-      const a = num(s[0]), b = num(s[1]);
-      if (a !== null && b !== null && a !== b) winner = a > b ? finalists[0] : finalists[1];
-    }
-    return { rounds, finalists: finalists && finalists.length === 2 ? finalists : null, finalScore: s, winner };
+    const fin = rounds[rounds.length - 1];
+    const champion = fin.done ? fin.groups[0].qualifiers[0] : null;
+    return { plan: st, rounds, champion, totalGames: gameNo };
   }
   // Quita puntos de jugadores que ya no están en una ronda (p. ej. tras corregir una ronda anterior).
-  function mkPrune() {
-    const c = mkCompute();
+  function prune(t, g) {
+    const c = compute(t, g);
     const keep = new Set();
-    c.rounds.forEach(R => R.groups.forEach(gr => gr.members.forEach(pid => keep.add(`${R.index}:${pid}`))));
-    Object.keys(mk.scores).forEach(k => { if (!keep.has(k)) delete mk.scores[k]; });
-    Object.keys(mk.tb).forEach(k => { if (!keep.has(k)) delete mk.tb[k]; });
-    if (!c.finalists || mk.final.a !== c.finalists[0] || mk.final.b !== c.finalists[1]) mk.final = {};
+    if (c) c.rounds.forEach(R => R.groups.forEach(x => x.members.forEach(pid => keep.add(`${R.index}:${pid}`))));
+    Object.keys(t.scores).forEach(k => { if (!keep.has(k)) delete t.scores[k]; });
+    Object.keys(t.tb).forEach(k => { if (!keep.has(k)) delete t.tb[k]; });
   }
   function setNum(obj, key, val, max) {
     if (val === '' || val === null) delete obj[key];
     else obj[key] = Math.max(0, Math.min(max, parseInt(val, 10) || 0));
   }
-  function mkSetFinal(idx, val) {
-    const c = mkCompute();
-    if (!c.finalists) return;
-    const f = (mk.final.a === c.finalists[0] && mk.final.b === c.finalists[1]) ? mk.final : { a: c.finalists[0], b: c.finalists[1], s: ['', ''] };
-    f.s = Array.isArray(f.s) ? f.s.slice() : ['', ''];
-    f.s[idx] = val === '' ? '' : Math.max(0, Math.min(999, parseInt(val, 10) || 0));
-    mk.final = f;
-  }
-  function mkHasResults() { return Object.keys(mk.scores).length > 0 || Object.keys(mk.final).length > 0; }
-
-  // ---------- Juego activo ----------
-  const GAME_KEY = 'torneo-idm-smash:game';
-  let game = 'smash';
-  try { game = localStorage.getItem(GAME_KEY) || 'smash'; } catch {}
-  if (location.hash === '#mariokart') game = 'mk';
-  if (location.hash === '#smash') game = 'smash';
-  if (game !== 'mk') game = 'smash';
+  const hasResults = t => Object.keys(t.scores).length > 0;
 
   // ---------- Persistencia (un almacén por juego) ----------
   const stores = {
-    smash: { local: LOCAL_KEY, api: '/api/state', get: () => state, set: s => { state = migrate(s); }, valid: validState, timer: null, saving: false, dirty: false },
-    mk: { local: 'torneo-idm-smash:mariokart', api: '/api/state?game=mk', get: () => mk, set: s => { mk = mkMigrate(s); }, valid: mkValid, timer: null, saving: false, dirty: false },
+    smash: { local: 'torneo-idm-smash:state', api: '/api/state', timer: null, saving: false, dirty: false },
+    mk: { local: 'torneo-idm-smash:mariokart', api: '/api/state?game=mk', timer: null, saving: false, dirty: false },
   };
-  function saveLocal(g = game) { try { localStorage.setItem(stores[g].local, JSON.stringify(stores[g].get())); } catch {} }
+  function saveLocal(g = game) { try { localStorage.setItem(stores[g].local, JSON.stringify(S[g])); } catch {} }
   function loadLocal(g) {
     try { const raw = localStorage.getItem(stores[g].local); return raw ? JSON.parse(raw) : null; } catch { return null; }
   }
-  function validState(s) {
-    return s && Array.isArray(s.players) && Array.isArray(s.order) && s.results && typeof s.results === 'object'
-      && s.order.length >= 2 && (s.order.length & (s.order.length - 1)) === 0;
-  }
-
   function setSaveState(text, cls) {
     const el = $('#save-state');
     el.textContent = text;
     el.className = 'save-state ' + (cls || '');
   }
-
-  function commit(rerender = true, g = game) {
+  function commit(g = game) {
     const st = stores[g];
-    st.get().updatedAt = Date.now();
+    S[g].updatedAt = Date.now();
     saveLocal(g);
-    if (rerender) render(); else renderStats();
+    render();
     if (remote.configured) {
       st.dirty = true;
       setSaveState('Guardando…', 'busy');
@@ -1044,7 +1044,6 @@
       st.timer = setTimeout(() => pushRemote(g), 450);
     }
   }
-
   async function pushRemote(g) {
     const st = stores[g];
     if (st.saving) { st.timer = setTimeout(() => pushRemote(g), 300); return; }
@@ -1053,13 +1052,13 @@
       const r = await fetch(st.api, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-pin': pin },
-        body: JSON.stringify({ state: st.get() }),
+        body: JSON.stringify({ state: S[g] }),
         keepalive: true, // permite terminar el guardado aunque se cierre la pestaña
       });
       const data = await r.json().catch(() => ({}));
       if (r.status === 401) { setSaveState('PIN inválido', 'err'); exitEdit(); askPin(); return; }
       if (!r.ok) throw new Error(data.error || r.status);
-      if (!st.dirty) st.get().updatedAt = data.updatedAt;
+      if (!st.dirty) S[g].updatedAt = data.updatedAt;
       saveLocal(g);
       setSaveState('Guardado en línea', 'ok');
     } catch (e) {
@@ -1071,7 +1070,6 @@
       st.saving = false;
     }
   }
-
   async function pullRemote(initial = false, g = game) {
     const st = stores[g];
     try {
@@ -1086,12 +1084,10 @@
       }
       showNotice('');
       if (st.dirty || st.saving) return;
-      if (data.state && st.valid(data.state)) {
-        if ((data.state.updatedAt || 0) !== (st.get().updatedAt || 0)) {
-          st.set(data.state);
-          saveLocal(g);
-          if (g === game) render();
-        }
+      if (data.state && validState(data.state) && (data.state.updatedAt || 0) !== (S[g].updatedAt || 0)) {
+        S[g] = migrate(g, data.state);
+        saveLocal(g);
+        if (g === game) render();
       }
       if (g === game || initial) setSaveState('Sincronizado', 'ok');
     } catch {
@@ -1099,7 +1095,6 @@
       setSaveState(initial ? 'Modo local' : 'Sin conexión', initial ? '' : 'err');
     }
   }
-
   function showNotice(text) {
     const el = $('#notice');
     el.textContent = text;
@@ -1124,10 +1119,9 @@
     return r.ok;
   }
   function askPin() {
-    const dlg = $('#pin-dialog');
     $('#pin-input').value = '';
     $('#pin-err').textContent = '';
-    dlg.showModal();
+    $('#pin-dialog').showModal();
     setTimeout(() => $('#pin-input').focus(), 30);
   }
   $('#pin-form').addEventListener('submit', async e => {
@@ -1140,13 +1134,10 @@
         try { localStorage.setItem(PIN_KEY, pin); } catch {}
         $('#pin-dialog').close();
         enterEdit();
-      } else {
-        $('#pin-err').textContent = 'PIN incorrecto';
-      }
+      } else $('#pin-err').textContent = 'PIN incorrecto';
     } catch { $('#pin-err').textContent = 'No se pudo verificar el PIN'; }
   });
   $('#pin-cancel').addEventListener('click', () => $('#pin-dialog').close());
-
   $('#edit-toggle').addEventListener('click', async () => {
     if (editing) return exitEdit();
     if (remote.configured && remote.pinRequired) {
@@ -1156,20 +1147,16 @@
     enterEdit();
   });
   $('#btn-reset').addEventListener('click', () => {
-    if (game === 'smash') {
-      if (!confirm('¿Borrar todos los marcadores y resultados de Smash? Los enfrentamientos se mantienen.')) return;
-      state.results = {};
-    } else {
-      if (!confirm('¿Borrar todos los puntos y la final de Mario Kart? Los grupos se mantienen.')) return;
-      mk.scores = {}; mk.tb = {}; mk.final = {};
-    }
+    const name = game === 'mk' ? 'Mario Kart' : 'Smash';
+    if (!confirm(`¿Borrar todos los puntos y resultados de ${name}? Los enfrentamientos se mantienen.`)) return;
+    cur().scores = {}; cur().tb = {};
     commit();
   });
 
   // ---------- Selector de juego y tabs ----------
   function setGame(g) {
     if (g === game) return;
-    flushScores();
+    flushInputs();
     game = g;
     try { localStorage.setItem(GAME_KEY, g); } catch {}
     history.replaceState(null, '', g === 'mk' ? '#mariokart' : '#smash');
@@ -1179,275 +1166,154 @@
     pullRemote(false, g);
   }
   document.querySelectorAll('.game-pill').forEach(b => b.addEventListener('click', () => setGame(b.dataset.game)));
-
   document.querySelectorAll('nav.tabs .tab').forEach(btn => btn.addEventListener('click', () => {
     document.querySelectorAll('nav.tabs .tab').forEach(b => b.setAttribute('aria-selected', String(b === btn)));
     document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + btn.dataset.view));
-    if (btn.dataset.view === 'bracket') requestAnimationFrame(drawLines);
   }));
 
   // ---------- Render ----------
-  function seedOf(pid) { return state.order.indexOf(pid) + 1; }
-
-  function slotHTML(r, m, idx, pid, winner, score) {
-    const p = pid && playerById(pid);
-    const ready = participants(r, m).every(Boolean);
-    let cls = 'slot';
-    if (!p) cls += ' empty';
-    else if (winner) cls += winner === pid ? ' win' : ' lose';
-    const scoreHTML = editing && ready
-      ? `<input class="score-in" type="number" min="0" max="99" inputmode="numeric" value="${esc(score[idx])}" data-in="score|${r},${m},${idx}" aria-label="Marcador ${esc(p ? shortName(p) : '')}">`
-      : `<span class="score">${esc(score[idx])}</span>`;
-    return `<div class="${cls}">
-      <span class="seed">${p ? seedOf(pid) : ''}</span>
-      <span class="who"><span class="${tagClass(p)}">${p ? esc(label(p)) : 'Por definir'}</span>${p ? `<span class="sub">${esc(p.name)}</span>` : ''}</span>
-      ${scoreHTML}
-    </div>`;
-  }
-
   const TROPHY = fill => `<svg width="40" height="40" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v3h3v2a5 5 0 0 1-5 5h-.3A5 5 0 0 1 13 15.9V18h3v3H8v-3h3v-2.1A5 5 0 0 1 9.3 13H9a5 5 0 0 1-5-5V6h3V3zm10 5v3a3 3 0 0 0 1-2.2V8h-1zM6 8v.8A3 3 0 0 0 7 11V8H6z" fill="${fill}"/></svg>`;
   function champHTML(cp) {
-    return `<div class="champ" data-match="champ">
+    return `<div class="champ">
         ${TROPHY(cp ? '#ffd84a' : 'var(--line-strong)')}
         <div class="label">Campeón</div>
         <div class="name ${cp ? '' : 'tbd'}">${cp ? esc(shortName(cp)) : '???'}</div>
         ${cp ? `<div class="sub">${cp.tag ? esc(cp.name) : ''}</div>` : '<div class="sub">Por definir</div>'}
       </div>`;
   }
+  const player = id => cur().players.find(p => p.id === id);
+  const seedNo = id => cur().order.indexOf(id) + 1;
 
-  function renderBracket() {
-    const R = numRounds();
-    let html = '<svg class="lines" id="lines"></svg>';
-    for (let r = 0; r < R; r++) {
-      const count = state.order.length >> (r + 1);
-      html += `<div class="col"><div class="col-head"><b>${roundName(r)}</b><span>${count} combate${count > 1 ? 's' : ''}</span></div><div class="col-body">`;
-      for (let m = 0; m < count; m++) {
-        const ps = participants(r, m), w = winnerOf(r, m), sc = scoreOf(r, m);
-        html += `<div class="match" data-match="${r}-${m}" title="Combate ${matchNumber(r, m)}">
-          ${slotHTML(r, m, 0, ps[0], w, sc)}${slotHTML(r, m, 1, ps[1], w, sc)}
-        </div>`;
-      }
-      html += '</div></div>';
-    }
-    const ch = champion(), cp = ch && playerById(ch);
-    html += `<div class="col"><div class="col-head"><b>Campeón</b><span>&nbsp;</span></div><div class="col-body">
-      ${champHTML(cp)}</div></div>`;
-    $('#bracket').innerHTML = html;
-    requestAnimationFrame(drawLines);
+  function rowHTML(R, gr, pid, pos) {
+    const t = cur(), p = player(pid), key = `${R.index}:${pid}`;
+    const pts = R.sc(pid), inTie = gr.tie.includes(pid), q = gr.qualifiers.includes(pid);
+    let cls = 'mk-row';
+    if (q) cls += ' q'; else if (inTie) cls += ' tie'; else if (gr.complete) cls += ' out';
+    const ptsHTML = editing
+      ? `<input class="score-in" type="number" min="0" max="999" inputmode="numeric" value="${esc(t.scores[key] ?? '')}" data-in="pts|${key}" aria-label="Puntos de ${esc(shortName(p))}">`
+      : `<span class="pts">${pts === null ? '—' : pts}</span>`;
+    const tbVal = t.tb[key];
+    const tbHTML = inTie || tbVal !== undefined
+      ? (editing
+        ? `<span class="tb-line">Desempate <input class="score-in tb-in" type="number" min="0" max="99" inputmode="numeric" value="${esc(tbVal ?? '')}" data-in="tb|${key}" aria-label="Desempate de ${esc(shortName(p))}"></span>`
+        : (tbVal !== undefined ? `<span class="tb-line">Desempate: ${esc(tbVal)}</span>` : ''))
+      : '';
+    const badge = q && gr.size > 2 && !R.final ? '<span class="badge">Pasa</span>' : '';
+    return `<div class="${cls}">
+      <span class="pos">${gr.size > 2 && gr.complete ? pos + 1 : seedNo(pid)}</span>
+      <span class="who"><span class="${tagClass(p)}">${esc(label(p))}</span><span class="sub">${esc(p.name)}</span>${tbHTML}</span>
+      ${badge}${ptsHTML}
+    </div>`;
   }
-
-  function drawLines() {
-    const host = $('#bracket'), svg = $('#lines');
-    if (!host || !svg || !host.offsetParent) return;
-    const base = host.getBoundingClientRect();
-    const rect = el => { const b = el.getBoundingClientRect(); return { l: b.left - base.left, r: b.right - base.left, cy: b.top - base.top + b.height / 2 }; };
-    const R = numRounds();
-    let d = '';
-    for (let r = 1; r <= R; r++) {
-      const count = r < R ? state.order.length >> (r + 1) : 1;
-      for (let m = 0; m < count; m++) {
-        const target = r < R ? host.querySelector(`[data-match="${r}-${m}"]`) : host.querySelector('[data-match="champ"]');
-        const feeders = r < R ? [2 * m, 2 * m + 1] : [0];
-        if (!target) continue;
-        const t = rect(target);
-        feeders.forEach(fm => {
-          const src = host.querySelector(`[data-match="${r - 1}-${fm}"]`);
-          if (!src) return;
-          const s = rect(src);
-          const mid = s.r + (t.l - s.r) / 2;
-          const done = !!winnerOf(r - 1, fm);
-          d += `<path class="${done ? 'done' : ''}" d="M${s.r} ${s.cy} H${mid} V${t.cy} H${t.l}"/>`;
-        });
-      }
-    }
-    svg.innerHTML = d;
+  function groupHTML(R, gr) {
+    let status = 'Por jugar', scls = '';
+    if (!gr.known) { status = 'En espera'; scls = 'wait'; }
+    else if (gr.tie.length) { status = 'Empate'; scls = 'tie'; }
+    else if (gr.done) { status = 'Terminado'; scls = 'done'; }
+    const rows = gr.known
+      ? gr.ranked.map((pid, i) => rowHTML(R, gr, pid, i)).join('')
+      : Array.from({ length: gr.size }, () => '<div class="mk-row empty"><span class="pos"></span><span class="who"><span class="tag">Por definir</span></span></div>').join('');
+    const tieNote = gr.tie.length
+      ? `<div class="tie-note">Empate${gr.size > 2 ? ' por el último lugar para pasar' : ''}. Jueguen un desempate y anoten sus puntos en “Desempate”.</div>` : '';
+    const title = gr.size === 2 ? `Juego ${gr.no} · 1 vs 1` : `Juego ${gr.no} · ${gr.size} jugadores`;
+    return `<div class="mk-group${gr.size === 2 ? ' duel' : ''}">
+      <div class="mk-group-head"><b>${title}</b><span class="chip ${scls}">${status}</span></div>
+      ${rows}${tieNote}
+    </div>`;
   }
-
-  function currentRound() {
-    for (let r = 0; r < numRounds(); r++) {
-      const count = state.order.length >> (r + 1);
-      for (let m = 0; m < count; m++) if (!winnerOf(r, m)) return r;
-    }
-    return null;
-  }
-
-  function playerStatus(pid) {
-    if (champion() === pid) return { cls: 'champion', text: '🏆 Campeón' };
-    let lastRound = -1, eliminated = null;
-    forEachMatch((r, m) => {
-      const ps = participants(r, m);
-      if (!ps.includes(pid)) return;
-      lastRound = r;
-      const w = winnerOf(r, m);
-      if (w && w !== pid) eliminated = r;
+  function planText(st) {
+    const parts = st.rounds.map((r, i) => {
+      const size = r.equal ? r.sizes[0] : r.sizes.join('/');
+      return `Ronda ${i + 1}: ${plural(r.G, 'juego', 'juegos')} de ${size}${r.sizes[0] === 2 && r.equal ? ' (1 vs 1)' : ''}, pasa${r.k > 1 ? 'n' : ''} ${r.k}`;
     });
-    if (eliminated !== null) return { cls: 'out', text: `Eliminado en ${roundName(eliminated).toLowerCase()}` };
-    if (lastRound >= 0) return { cls: '', text: `En ${roundName(lastRound).toLowerCase()}` };
-    return { cls: '', text: '' };
-  }
-
-  // ---------- Render Mario Kart ----------
-  const mkPlayer = id => mk.players.find(p => p.id === id);
-  const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-  function mkPlanText(c) {
-    const parts = c.rounds.map(R => `Ronda ${R.index + 1}: ${plural(R.G, 'grupo', 'grupos')} de ${R.size}, pasa${R.k > 1 ? 'n' : ''} ${R.k} por grupo`);
     parts.push('Final 1 vs 1');
     return parts.join(' → ');
   }
 
-  function mkRowHTML(R, gr, pid, pos) {
-    const p = mkPlayer(pid);
-    const key = `${R.index}:${pid}`;
-    const pts = R.sc(pid), inTie = gr.tie.includes(pid);
-    let cls = 'mk-row';
-    if (gr.qualifiers.includes(pid)) cls += ' q';
-    else if (inTie) cls += ' tie';
-    else if (gr.complete) cls += ' out';
-    const ptsHTML = editing
-      ? `<input class="score-in" type="number" min="0" max="999" inputmode="numeric" value="${esc(mk.scores[key] ?? '')}" data-in="mk|${key}" aria-label="Puntos de ${esc(shortName(p))}">`
-      : `<span class="pts">${pts === null ? '—' : pts}</span>`;
-    const tbVal = mk.tb[key];
-    const tbHTML = inTie || tbVal !== undefined
-      ? (editing
-        ? `<span class="tb-line">Desempate <input class="score-in tb-in" type="number" min="0" max="99" inputmode="numeric" value="${esc(tbVal ?? '')}" data-in="mktb|${key}" aria-label="Desempate de ${esc(shortName(p))}"></span>`
-        : (tbVal !== undefined ? `<span class="tb-line">Desempate: ${esc(tbVal)}</span>` : ''))
-      : '';
-    return `<div class="${cls}">
-      <span class="pos">${gr.complete ? pos + 1 : ''}</span>
-      <span class="who"><span class="${tagClass(p)}">${esc(label(p))}</span><span class="sub">${esc(p.name)}</span>${tbHTML}</span>
-      ${gr.qualifiers.includes(pid) ? '<span class="badge">Pasa</span>' : ''}
-      ${ptsHTML}
-    </div>`;
-  }
-
-  function mkGroupHTML(R, gr, gi) {
-    let status = 'Por jugar', scls = '';
-    if (!R.known) { status = 'En espera'; scls = 'wait'; }
-    else if (gr.tie.length) { status = 'Empate'; scls = 'tie'; }
-    else if (gr.done) { status = 'Terminado'; scls = 'done'; }
-    let rows;
-    if (!R.known) {
-      rows = Array.from({ length: R.size }, () => '<div class="mk-row empty"><span class="pos"></span><span class="who"><span class="tag">Por definir</span></span></div>').join('');
-    } else {
-      rows = gr.ranked.map((pid, i) => mkRowHTML(R, gr, pid, i)).join('');
-    }
-    const tieNote = gr.tie.length
-      ? `<div class="tie-note">Empate por el último lugar para pasar. Jueguen una carrera de desempate y anoten sus puntos en “Desemp.”.</div>` : '';
-    return `<div class="mk-group">
-      <div class="mk-group-head"><b>Grupo ${GROUP_LETTERS[gi] || gi + 1}</b><span class="chip ${scls}">${status}</span></div>
-      ${rows}${tieNote}
-    </div>`;
-  }
-
-  function renderMK() {
-    const c = mkCompute(), n = mk.order.length;
+  function renderTournament() {
+    const t = cur(), c = compute(t, game), n = t.order.length;
+    const p = plan(n, game, t.config.consoles, t.config.games);
     let html = '';
     if (editing) {
-      const maxR = mkMaxRounds(n, mk.config.groupMin);
+      const C = t.config.consoles;
       html += `<div class="mk-config">
-        <label>Rondas eliminatorias<input type="number" min="1" max="${maxR}" value="${mk.config.rounds}" data-mkcfg="rounds"></label>
-        <label>Mínimo de personas por grupo<input type="number" min="2" max="${n}" value="${mk.config.groupMin}" data-mkcfg="groupMin"></label>
-        <div class="plan"><b>${esc(mkPlanText(c))}</b><br>Con este mínimo caben hasta ${plural(maxR, 'ronda', 'rondas')}. Todos los grupos de una ronda son del mismo tamaño y de cada uno pasan los mismos. Escribe los puntos que hizo cada jugador; los de más puntos pasan solos.</div>
+        <label>Consolas<input type="number" min="1" max="12" value="${C}" data-cfg="consoles"></label>
+        <label>Juegos en total<input type="number" min="1" max="${n - 1}" value="${t.config.games}" data-cfg="games"></label>
+        <div class="plan">${p.error ? `<b class="warn">${esc(p.error)}</b>` : `<b>${esc(planText(p))}</b><br>
+          Total: ${plural(p.games, 'juego', 'juegos')} en ${plural(p.tandas, 'tanda', 'tandas')} con ${plural(C, 'consola', 'consolas')}
+          (juegos al mismo tiempo, uno por consola). Con ${plural(C, 'consola', 'consolas')} se puede de ${p.minGames} a ${p.maxGames} juegos.
+          ${p.equal ? 'Todos los grupos de cada ronda son del mismo tamaño.' : '<span class="warn">Con estas consolas no se pueden hacer grupos iguales; algunos tienen 1 jugador más.</span>'}
+          ${game === 'mk' && p.rounds.some(r => r.sizes.some(s => s > 4)) ? '<br>Los grupos de más de 4 juegan en red local (2 por consola).' : ''}`}
+        </div>
       </div>`;
-    } else {
-      html += `<p class="mk-plan">${esc(mkPlanText(c))}</p>`;
+    } else if (c) {
+      html += `<p class="mk-plan">${esc(planText(c.plan))} · ${plural(c.plan.games, 'juego', 'juegos')} en total</p>`;
     }
+    if (!c) { $('#t-view').innerHTML = html + `<p class="mk-plan warn">${esc(p.error || '')}</p>`; return; }
+    html += '<div class="t-rounds">';
     c.rounds.forEach(R => {
-      html += `<section class="mk-round">
-        <div class="mk-round-head"><b>Ronda ${R.index + 1}</b><span>${plural(R.G, 'grupo', 'grupos')} de ${R.size} · pasa${R.k > 1 ? 'n' : ''} ${R.k} por grupo</span></div>
-        <div class="mk-groups">${R.groups.map((gr, gi) => mkGroupHTML(R, gr, gi)).join('')}</div>
+      const sub = R.final ? '1 vs 1 · el que haga más puntos gana'
+        : `${plural(R.G, 'juego', 'juegos')} · pasa${R.k > 1 ? 'n' : ''} ${R.k}${R.G > 1 || R.sizes[0] > 2 ? (R.sizes[0] === 2 ? '' : ' por grupo') : ''}`;
+      html += `<section class="t-col${R.sizes.some(s => s > 2) ? ' wide' : ''}">
+        <div class="col-head"><b>${esc(R.name)}</b><span>${esc(sub)}</span></div>
+        <div class="t-col-body">${R.groups.map(gr => groupHTML(R, gr)).join('')}</div>
       </section>`;
     });
-    // Final 1 vs 1
-    const fs = c.finalScore, win = c.winner;
-    const fslot = idx => {
-      const pid = c.finalists && c.finalists[idx], p = pid && mkPlayer(pid);
-      let cls = 'slot';
-      if (!p) cls += ' empty'; else if (win) cls += win === pid ? ' win' : ' lose';
-      const scoreHTML = editing && c.finalists
-        ? `<input class="score-in" type="number" min="0" max="999" inputmode="numeric" value="${esc(fs[idx])}" data-in="mkfinal|${idx}" aria-label="Marcador final ${esc(p ? shortName(p) : '')}">`
-        : `<span class="score">${esc(fs[idx])}</span>`;
-      return `<div class="${cls}"><span class="seed"></span>
-        <span class="who"><span class="${tagClass(p)}">${p ? esc(label(p)) : 'Por definir'}</span>${p ? `<span class="sub">${esc(p.name)}</span>` : ''}</span>
-        ${scoreHTML}</div>`;
-    };
-    html += `<section class="mk-round">
-      <div class="mk-round-head"><b>Final</b><span>1 vs 1 · el que haga más puntos es el campeón</span></div>
-      <div class="mk-final"><div class="match">${fslot(0)}${fslot(1)}</div>${champHTML(win && mkPlayer(win))}</div>
-    </section>`;
-    $('#mk-view').innerHTML = html;
+    html += `<section class="t-col"><div class="col-head"><b>Campeón</b><span>&nbsp;</span></div>
+      <div class="t-col-body">${champHTML(c.champion && player(c.champion))}</div></section>`;
+    html += '</div>';
+    $('#t-view').innerHTML = html;
   }
 
-  function mkStatus(pid, c) {
-    if (c.winner === pid) return { cls: 'champion', text: '🏆 Campeón' };
-    if (c.finalists && c.finalists.includes(pid)) return { cls: '', text: c.winner ? 'Subcampeón' : 'Finalista' };
+  function statusOf(pid, c) {
+    if (!c) return { cls: '', text: '' };
+    if (c.champion === pid) return { cls: 'champion', text: '🏆 Campeón' };
     let text = '', cls = '';
-    c.rounds.forEach(R => R.groups.forEach((gr, gi) => {
+    c.rounds.forEach(R => R.groups.forEach(gr => {
       if (!gr.members.includes(pid)) return;
-      const where = `ronda ${R.index + 1} · grupo ${GROUP_LETTERS[gi]}`;
-      if (gr.done && !gr.qualifiers.includes(pid)) { text = `Eliminado en ${where}`; cls = 'out'; }
-      else if (!gr.done) text = `En ${where}`;
+      const where = R.final ? 'la final' : R.name.toLowerCase();
+      if (gr.done && !gr.qualifiers.includes(pid)) { text = R.final ? 'Subcampeón' : `Eliminado en ${where}`; cls = R.final ? '' : 'out'; }
+      else if (!gr.done) text = R.final ? 'Finalista' : `En ${where} · juego ${gr.no}`;
     }));
     return { cls, text };
   }
-
   function renderPlayers() {
-    const isMk = game === 'mk';
-    const c = isMk ? mkCompute() : null;
-    const order = isMk ? mk.order : state.order;
-    const find = isMk ? mkPlayer : playerById;
-    $('#players-grid').innerHTML = order.map(find).filter(Boolean).map(p => {
-      const st = isMk ? mkStatus(p.id, c) : playerStatus(p.id);
+    const t = cur(), c = compute(t, game);
+    $('#players-grid').innerHTML = t.order.map(player).filter(Boolean).map(p => {
+      const st = statusOf(p.id, c);
       const initials = esc((shortName(p) || '?').replace(/[^A-Za-z0-9ÁÉÍÓÚÑáéíóúñ]/g, '').slice(0, 2).toUpperCase() || '?');
       return `<div class="pcard ${st.cls}">
         <div class="avatar">${initials}</div>
         <div class="info">
           ${editing
-            ? `<input class="tag-in" data-edit="${p.id}" data-field="tag" value="${esc(p.tag)}" placeholder="Sin GamerTag" aria-label="GamerTag"><span class="sub">${esc(p.name)}</span>`
+            ? `<input class="tag-in" data-edit="${p.id}" value="${esc(p.tag)}" placeholder="Sin GamerTag" aria-label="GamerTag"><span class="sub">${esc(p.name)}</span>`
             : `<span class="${tagClass(p)}">${esc(label(p))}</span><span class="sub">${esc(p.name)}</span>`}
-          <span class="status">#${order.indexOf(p.id) + 1}${st.text ? ' · ' + esc(st.text) : ''}</span>
+          <span class="status">#${seedNo(p.id)}${st.text ? ' · ' + esc(st.text) : ''}</span>
         </div>
       </div>`;
     }).join('');
   }
-
   function renderStats() {
-    let total = 0, played = 0, roundText;
-    if (game === 'smash') {
-      forEachMatch((r, m) => { total++; if (winnerOf(r, m)) played++; });
-      $('#st-players').textContent = state.players.length;
-      const cur = currentRound();
-      roundText = cur === null ? 'Terminado' : roundShort(cur);
-      $('#st-played-label').textContent = 'Combates';
-    } else {
-      const c = mkCompute();
+    const t = cur(), c = compute(t, game);
+    let total = 0, played = 0, roundText = '—';
+    if (c) {
       c.rounds.forEach(R => R.groups.forEach(gr => { total++; if (gr.done) played++; }));
-      total++; if (c.winner) played++;
-      $('#st-players').textContent = mk.players.length;
-      const cur = c.rounds.find(R => !R.done);
-      roundText = cur ? `Ronda ${cur.index + 1}` : (c.winner ? 'Terminado' : 'Final');
-      $('#st-played-label').textContent = 'Grupos y final';
+      const next = c.rounds.find(R => !R.done);
+      roundText = next ? roundShort(next) : 'Terminado';
     }
+    $('#st-players').textContent = t.players.length;
     $('#st-played').textContent = `${played}/${total}`;
     $('#st-round').textContent = roundText;
     $('#progress').style.width = (total ? (played / total) * 100 : 0) + '%';
   }
-
   function render() {
     const isMk = game === 'mk';
     document.body.classList.toggle('game-mk', isMk); // tema azul y animaciones de Mario Kart
     document.querySelectorAll('.game-pill').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.game === game)));
-    $('#tab-main').textContent = isMk ? 'Grupos y final' : 'Bracket';
-    $('#bracket-wrap').hidden = isMk;
-    $('#mk-view').hidden = !isMk;
-    $('#toolbar-hint').innerHTML = isMk
-      ? 'Arriba eliges cuántas rondas y el mínimo de personas por grupo. Escribe los puntos de cada jugador: <b>los que hagan más puntos pasan solos a la siguiente ronda</b>, y la final es 1 vs 1.'
-      : 'Escribe los puntos de cada jugador. <b>El que tenga más puntos pasa automáticamente a la siguiente ronda.</b> Si borras o cambias un marcador, el bracket se corrige solo.';
-    $('#footer-text').textContent = isMk
-      ? `Mario Kart · ${mk.players.length} jugadores · Los resultados se actualizan automáticamente.`
-      : 'Smash · Eliminación directa · 16 jugadores · Los resultados se actualizan automáticamente.';
+    $('#toolbar-hint').innerHTML = 'Arriba eliges cuántas <b>consolas</b> y cuántos <b>juegos en total</b>; la estructura se calcula sola. Escribe los puntos de cada jugador: <b>los que hagan más puntos pasan solos a la siguiente ronda</b>, y la final es 1 vs 1.';
+    $('#footer-text').textContent = `${isMk ? 'Mario Kart' : 'Smash'} · ${cur().players.length} jugadores · Los resultados se actualizan automáticamente.`;
     renderStats();
-    if (isMk) renderMK(); else renderBracket();
+    renderTournament();
     renderPlayers();
   }
 
@@ -1455,29 +1321,27 @@
   // Los puntos se juntan y se aplican de una vez: al salir de la casilla (Tab, Enter, tocar
   // fuera) o tras una pausa al escribir. Después se devuelve el cursor a donde esté la persona.
   const pending = new Map();
-  let scoreTimer;
+  let inputTimer;
   function queueInput(el, delay) {
     pending.set(el.dataset.in, el.value);
-    clearTimeout(scoreTimer);
-    scoreTimer = setTimeout(flushScores, delay);
+    clearTimeout(inputTimer);
+    inputTimer = setTimeout(flushInputs, delay);
   }
-  function flushScores() {
-    clearTimeout(scoreTimer);
+  function flushInputs() {
+    clearTimeout(inputTimer);
     if (!pending.size) return;
     const active = document.activeElement;
     const activeKey = active && active.dataset ? active.dataset.in : null;
     const caret = activeKey ? active.value.length : 0;
-    let touched = null;
+    const t = cur();
     pending.forEach((val, id) => {
       const [kind, key] = id.split('|');
-      if (kind === 'score') { const [r, m, idx] = key.split(',').map(Number); setScore(r, m, idx, val); touched = 'smash'; }
-      else if (kind === 'mk') { setNum(mk.scores, key, val, 999); touched = 'mk'; }
-      else if (kind === 'mktb') { setNum(mk.tb, key, val, 99); touched = 'mk'; }
-      else if (kind === 'mkfinal') { mkSetFinal(Number(key), val); touched = 'mk'; }
+      if (kind === 'pts') setNum(t.scores, key, val, 999);
+      else if (kind === 'tb') setNum(t.tb, key, val, 99);
     });
     pending.clear();
-    if (touched === 'mk') mkPrune();
-    if (touched) commit(true, touched);
+    prune(t, game);
+    commit();
     const again = activeKey && document.querySelector(`[data-in="${activeKey}"]`);
     if (again) { again.focus(); try { again.setSelectionRange(caret, caret); } catch {} }
   }
@@ -1485,38 +1349,36 @@
     if (e.target.dataset && e.target.dataset.in) queueInput(e.target, 900);
   });
   document.addEventListener('change', e => {
-    const el = e.target;
+    const el = e.target, t = cur();
     if (el.dataset.in) {
       queueInput(el, 0);
-    } else if (el.dataset.mkcfg) {
-      const field = el.dataset.mkcfg, n = mk.order.length;
+    } else if (el.dataset.cfg) {
+      const field = el.dataset.cfg;
       let v = parseInt(el.value, 10);
       if (isNaN(v)) { render(); return; }
-      if (field === 'groupMin') v = Math.max(2, Math.min(n, v));
-      if (field === 'rounds') v = Math.max(1, Math.min(mkMaxRounds(n, mk.config.groupMin), v));
-      if (v === mk.config[field]) { render(); return; }
-      if (mkHasResults() && !confirm('Cambiar el formato borra los puntos que ya se capturaron en Mario Kart. ¿Continuar?')) { render(); return; }
-      mk.config[field] = v;
-      mk.config.rounds = Math.max(1, Math.min(mkMaxRounds(n, mk.config.groupMin), mk.config.rounds));
-      mk.scores = {}; mk.tb = {}; mk.final = {};
-      commit(true, 'mk');
+      v = field === 'consoles' ? Math.max(1, Math.min(12, v)) : Math.max(1, Math.min(t.order.length - 1, v));
+      const next = { ...t.config, [field]: v };
+      const before = plan(t.order.length, game, t.config.consoles, t.config.games);
+      const after = plan(t.order.length, game, next.consoles, next.games);
+      if (after.error && after.minGames) next.games = after.minGames; // muy pocos juegos: se ajusta al mínimo
+      const fixed = plan(t.order.length, game, next.consoles, next.games);
+      if (fixed.error) { alert(fixed.error); render(); return; }
+      const same = !before.error && JSON.stringify(before.rounds) === JSON.stringify(fixed.rounds);
+      if (!same && hasResults(t) && !confirm('Con esta configuración cambia la estructura del torneo y se borran los puntos que ya se capturaron. ¿Continuar?')) { render(); return; }
+      t.config = next;
+      if (!same) { t.scores = {}; t.tb = {}; }
+      commit();
+      if (after.error) alert(`${after.error} Se ajustó a ${next.games}.`);
     } else if (el.dataset.edit) {
-      const p = (game === 'mk' ? mkPlayer : playerById)(el.dataset.edit);
+      const p = player(el.dataset.edit);
       if (!p) return;
-      p[el.dataset.field] = el.value.trim();
+      p.tag = el.value.trim();
       commit();
     }
   });
 
-  let resizeRaf;
-  window.addEventListener('resize', () => { cancelAnimationFrame(resizeRaf); resizeRaf = requestAnimationFrame(drawLines); });
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawLines);
-
   // ---------- Arranque ----------
-  const localSmash = loadLocal('smash');
-  if (validState(localSmash)) state = migrate(localSmash);
-  const localMk = loadLocal('mk');
-  if (mkValid(localMk)) mk = mkMigrate(localMk);
+  ['smash', 'mk'].forEach(g => { const l = loadLocal(g); if (validState(l)) S[g] = migrate(g, l); });
   render();
   pullRemote(true, 'smash').then(() => pullRemote(true, 'mk'));
   setInterval(() => { if (document.visibilityState === 'visible') pullRemote(); }, 8000);
@@ -1527,7 +1389,7 @@
   window.addEventListener('pagehide', flushSave);
   // Si hay un cambio pendiente de guardar, lo envía de inmediato (al cerrar o cambiar de pestaña).
   function flushSave() {
-    flushScores();
+    flushInputs();
     if (!remote.configured) return;
     Object.keys(stores).forEach(g => {
       const st = stores[g];

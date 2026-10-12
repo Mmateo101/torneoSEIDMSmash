@@ -2,14 +2,17 @@
 
 Página del torneo con dos juegos; se cambia entre ellos con los botones del encabezado.
 
-**Super Smash Bros. Ultimate** — eliminación directa, 16 jugadores.
-- **Bracket**: octavos → final → campeón.
-- **Editar (lápiz ✏️)**: escribe los puntos de cada jugador; el que tenga más puntos pasa automáticamente a la siguiente ronda.
+Los dos juegos funcionan igual; cada uno se configura desde el lápiz ✏️ con dos datos:
 
-**Mario Kart** — grupos por puntos y final 1 vs 1, 10 jugadores.
-- **Editar (lápiz ✏️)**: elige cuántas rondas eliminatorias y el mínimo de personas por grupo. Todos los grupos de una ronda son del mismo tamaño y de cada uno pasan los mismos, para que todos tengan las mismas posibilidades.
-- Se escriben los puntos de cada jugador y los de más puntos pasan solos. Si hay empate en el último lugar para pasar, aparece una casilla de desempate.
-- La final es 1 vs 1: el que haga más puntos es el campeón.
+- **Consolas**: cuántas hay disponibles (cuántos juegos pueden ir al mismo tiempo).
+- **Juegos en total**: cuántas partidas se quieren jugar en todo el torneo.
+
+Con eso la página calcula sola la estructura: cuántas rondas, de qué tamaño los grupos y cuántos pasan por grupo, siempre terminando en una **final 1 vs 1**. Prefiere grupos del mismo tamaño (y avisa si no se puede) y usa la mayor cantidad de juegos permitida. Cada juego elimina al menos a un jugador, así que el máximo es jugadores − 1 (15 en Smash, que es el bracket 1 vs 1 de siempre).
+
+- Smash: hasta 4 jugadores por juego (una consola). Por defecto 2 consolas y 15 juegos → bracket de octavos a final.
+- Mario Kart: 4 por consola, o con varias consolas en red local hasta 2 por consola (máx. 12). Por defecto 3 consolas y 3 juegos → 2 grupos de 5 y final.
+
+Durante el torneo se escriben los puntos de cada jugador y los de más puntos pasan solos. En los 1 vs 1 el ganador avanza en cuanto termina su juego. Si hay empate en el último lugar para pasar, aparece una casilla de desempate.
 
 **Participantes**: GamerTag, nombre completo y en qué ronda va cada jugador del juego elegido.
 
