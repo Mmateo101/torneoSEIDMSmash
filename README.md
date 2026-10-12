@@ -4,17 +4,14 @@ Página del torneo con dos juegos; se cambia entre ellos con los botones del enc
 
 Los dos juegos funcionan igual; cada uno se configura desde el lápiz ✏️ con dos datos:
 
-- **Consolas**: cuántas hay disponibles (cuántos juegos pueden ir al mismo tiempo).
-- **Juegos en total**: cuántas partidas se quieren jugar en todo el torneo.
+- **Juegos en total**: cuántas partidas se jugarán en todo el torneo. El mínimo es la eliminación directa (en Smash 1 vs 1: 16 → 8 → 4 → 2 → final = 15 juegos).
+- **Jugadores por juego (priorizar)**: 2 (1 vs 1), 3 o 4. La mayoría de los juegos tendrá ese tamaño; solo cuando los jugadores no se pueden dividir exacto hay juegos con uno más o uno menos.
 
-Con eso la página calcula sola la estructura: cuántas rondas, de qué tamaño los grupos y cuántos pasan por grupo, siempre terminando en una **final 1 vs 1**. Prefiere grupos del mismo tamaño (y avisa si no se puede) y usa la mayor cantidad de juegos permitida. Cada juego elimina al menos a un jugador, así que el máximo es jugadores − 1 (15 en Smash, que es el bracket 1 vs 1 de siempre).
+Con eso la página calcula la estructura. Los juegos extra se usan en las primeras rondas, como la fase de grupos del Mundial: cada quien juega varias veces (todos contra todos en su grupo) y se elimina a pocos; las rondas siguientes ya recortan más, y todo termina en una **final 1 vs 1**. Por ejemplo, en Smash 1 vs 1 con 31 juegos: 4 grupos de 4 todos contra todos (pasan 2) → cuartos → semis → final.
 
-- Smash: hasta 4 jugadores por juego (una consola). Por defecto 2 consolas y 15 juegos → bracket de octavos a final.
-- Mario Kart: 4 por consola, o con varias consolas en red local hasta 2 por consola (máx. 12). Por defecto 3 consolas y 3 juegos → 2 grupos de 5 y final.
+En cada juego se anotan los puntos de cada jugador. En la tabla del grupo, cada jugador suma 1 punto por cada rival al que superó en un juego (½ si empatan); desempata el total de puntos y, si sigue el empate en el lugar para pasar, aparece una casilla de desempate. En los 1 vs 1 el ganador avanza en cuanto termina su juego, y los que pasan de un grupo se cruzan con jugadores de otros grupos.
 
-Durante el torneo se escriben los puntos de cada jugador y los de más puntos pasan solos. En los 1 vs 1 el ganador avanza en cuanto termina su juego. Si hay empate en el último lugar para pasar, aparece una casilla de desempate.
-
-**Participantes**: GamerTag, nombre completo y en qué ronda va cada jugador del juego elegido.
+**Participantes**: arriba del torneo, con GamerTag, nombre completo y en qué ronda va cada jugador del juego elegido.
 
 Los cambios se guardan en línea (Upstash Redis) y todos los que abran la página los ven en unos segundos.
 
