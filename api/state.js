@@ -1,6 +1,9 @@
+import { createHash, timingSafeEqual } from 'node:crypto';
+
 // Persistencia compartida de los torneos en Upstash Redis (integración de Vercel Marketplace).
 // Variables de entorno: KV_REST_API_URL + KV_REST_API_TOKEN (o UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN).
-// Opcional: ADMIN_PIN — si existe, solo quien lo conozca puede guardar cambios.
+// Contraseña para editar: siempre se pide. Por defecto es la del torneo, guardada solo como huella
+// SHA-256 (el repo es público). Si en Vercel se define ADMIN_PIN, esa la reemplaza.
 // Cada juego se guarda por separado: /api/state (Smash) y /api/state?game=mk (Mario Kart).
 
 const KEYS = {
@@ -8,6 +11,14 @@ const KEYS = {
   mk: 'torneo-idm-smash:mariokart',
 };
 const MAX_BYTES = 200_000;
+const DEFAULT_PIN_SHA256 = '843e65b1a796e0cc71ebd7590f87d911add6fc8d1da72e487da5f0e37369733a';
+
+const sha256 = s => createHash('sha256').update(String(s), 'utf8').digest();
+function pinOk(cfg, given) {
+  if (typeof given !== 'string' || !given) return false;
+  const expected = cfg.pin ? sha256(cfg.pin) : Buffer.from(DEFAULT_PIN_SHA256, 'hex');
+  return timingSafeEqual(sha256(given), expected);
+}
 
 function config() {
   return {
@@ -42,7 +53,7 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   const cfg = config();
   const configured = Boolean(cfg.url && cfg.token);
-  const pinRequired = Boolean(cfg.pin);
+  const pinRequired = true;
   const game = new URL(req.url, 'http://localhost').searchParams.get('game') || 'smash';
   const key = KEYS[game];
   if (!key) return res.status(400).json({ error: 'Juego desconocido' });
@@ -55,8 +66,8 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      if (pinRequired && req.headers['x-admin-pin'] !== cfg.pin) {
-        return res.status(401).json({ error: 'PIN incorrecto' });
+      if (!pinOk(cfg, req.headers['x-admin-pin'])) {
+        return res.status(401).json({ error: 'Contraseña incorrecta' });
       }
       let body = req.body;
       if (typeof body === 'string') body = JSON.parse(body || '{}');

@@ -21,7 +21,7 @@ Los cambios se guardan en línea (Upstash Redis) y todos los que abran la págin
 2. Para que los cambios **se queden guardados** entre visitas y dispositivos:
    en el proyecto de Vercel ve a **Storage → Create Database → Upstash (Redis)**, créala y conéctala al proyecto.
    Esto agrega automáticamente `KV_REST_API_URL` y `KV_REST_API_TOKEN`.
-3. (Recomendado) En **Settings → Environment Variables** agrega `ADMIN_PIN` con un PIN; solo quien lo sepa podrá editar resultados.
+3. Editar resultados siempre pide contraseña (al tocar el lápiz ✏️) y el servidor rechaza cualquier cambio sin ella. La contraseña del torneo ya viene configurada; en el código solo está su huella SHA-256, no el texto. Para cambiarla, agrega en **Settings → Environment Variables** la variable `ADMIN_PIN` con la nueva contraseña.
 4. Haz **Redeploy** para que tome las variables.
 
 Sin Redis la página funciona, pero los cambios solo se guardan en el navegador de quien los hizo.

@@ -469,8 +469,8 @@
 <dialog id="pin-dialog">
   <form method="dialog" id="pin-form">
     <h3>Editar resultados</h3>
-    <p>Ingresa el PIN para poder editar.</p>
-    <input type="password" id="pin-input" inputmode="numeric" autocomplete="off" placeholder="PIN">
+    <p>Ingresa la contraseña para poder editar los resultados.</p>
+    <input type="password" id="pin-input" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Contraseña">
     <div class="err" id="pin-err"></div>
     <div class="row">
       <button class="btn" value="cancel" type="button" id="pin-cancel">Cancelar</button>
@@ -975,8 +975,10 @@
 
   let remote = { configured: false, pinRequired: false, reachable: false };
   let editing = false;
+  // La contraseña solo se guarda en memoria mientras la página está abierta: al volver a entrar
+  // se pide otra vez. (Se borra la que guardaban versiones anteriores.)
   let pin = '';
-  try { pin = localStorage.getItem(PIN_KEY) || ''; } catch {}
+  try { localStorage.removeItem(PIN_KEY); } catch {}
 
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -1192,7 +1194,7 @@
         keepalive: true, // permite terminar el guardado aunque se cierre la pestaña
       });
       const data = await r.json().catch(() => ({}));
-      if (r.status === 401) { setSaveState('PIN inválido', 'err'); exitEdit(); askPin(); return; }
+      if (r.status === 401) { setSaveState('Contraseña inválida', 'err'); pin = ''; exitEdit(); askPin(); return; }
       if (!r.ok) throw new Error(data.error || r.status);
       if (!st.dirty) S[g].updatedAt = data.updatedAt;
       saveLocal(g);
@@ -1267,20 +1269,17 @@
     try {
       if (await checkPin(candidate)) {
         pin = candidate;
-        try { localStorage.setItem(PIN_KEY, pin); } catch {}
         $('#pin-dialog').close();
         enterEdit();
-      } else $('#pin-err').textContent = 'PIN incorrecto';
-    } catch { $('#pin-err').textContent = 'No se pudo verificar el PIN'; }
+      } else { $('#pin-err').textContent = 'Contraseña incorrecta'; $('#pin-input').select(); }
+    } catch { $('#pin-err').textContent = 'No se pudo verificar la contraseña. Revisa tu conexión.'; }
   });
   $('#pin-cancel').addEventListener('click', () => $('#pin-dialog').close());
-  $('#edit-toggle').addEventListener('click', async () => {
+  // Cada vez que alguien toca el lápiz se pide la contraseña. (La última correcta se queda en
+  // memoria solo para terminar de guardar lo que se estaba editando.)
+  $('#edit-toggle').addEventListener('click', () => {
     if (editing) return exitEdit();
-    if (remote.configured && remote.pinRequired) {
-      if (pin && await checkPin(pin).catch(() => false)) return enterEdit();
-      return askPin();
-    }
-    enterEdit();
+    askPin();
   });
   $('#btn-reset').addEventListener('click', () => {
     const name = game === 'mk' ? 'Mario Kart' : 'Smash';
